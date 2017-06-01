@@ -29,17 +29,17 @@ public:
   Meta *meta() const;
 
   // leafPageElement retrieves the leaf node by index.
-  LeafPageElement *leafPageElement(std::uint16_t index);
+  LeafPageElement *leafPageElement(std::uint16_t index) const;
   // leafPageElements retrieves a list of leaf nodes.
-  std::vector<LeafPageElement> leafPageElements();
+  std::vector<LeafPageElement> leafPageElements() const;
 
   // branchPageElement retrieves the brnach node by index.
-  BranchPageElement *branchPageElement(std::uint16_t index);
+  BranchPageElement *branchPageElement(std::uint16_t index) const;
   // branchPageElements retrieves a list of branch nodes.
-  std::vector<BranchPageElement> branchPageElements();
+  std::vector<BranchPageElement> branchPageElements() const;
 
   // dump writes n bytes of the page to STDERR as hex output.
-  void hexdump(int n);
+  void hexdump(int n) const;
 
 private:
   pgid id;
