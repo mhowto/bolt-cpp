@@ -10,12 +10,23 @@ class Meta;
 class LeafPageElement;
 class BranchPageElement;
 
+enum class PageFlag {
+  BranchPageFlag = 0x01,
+  LeafPageFlag = 0x02,
+  MetaPageFlag = 0x04,
+  FreelistPageFlag = 0x10,
+};
+
+inline PageFlag operator|(PageFlag a, PageFlag b) {
+  return static_cast<PageFlag>(static_cast<int>(a) | static_cast<int>(b));
+}
+
 class Page {
 public:
   // type returns a human readable page type string used for debugging.
-  std::string type();
+  std::string type() const;
   // meta returns a pointer to the metadata section of the page.
-  Meta *meta();
+  Meta *meta() const;
 
   // leafPageElement retrieves the leaf node by index.
   LeafPageElement *leafPageElement(std::uint16_t index);
@@ -41,10 +52,33 @@ private:
 // LeafPageElement represents a node on a leaf page.
 class LeafPageElement {
 public:
+  std::string key() const;
+  std::string value() const;
+
 private:
-    std::uint32_t flags;
-    std::uint32_t pos;
+  std::uint32_t flags;
+  std::uint32_t pos;
+  std::uint32_t ksize;
+  std::uint32_t vsize;
 };
 
+// BranchPageElement represents a node on a branch page.
+class BranchPageElement {
+public:
+  std::string key() const;
+
+private:
+  std::uint32_t pos;
+  std::uint32_t ksize;
+  pgid id;
+};
+
+// PageInfo represents human readdable information about a page.
+struct PageInfo {
+  int id;
+  std::string type;
+  int count;
+  int overflowClount;
+};
 
 #endif

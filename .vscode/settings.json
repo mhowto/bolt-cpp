@@ -30,6 +30,7 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "cerrno": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "memory": "cpp"
     }
 }
