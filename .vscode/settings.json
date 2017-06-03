@@ -31,6 +31,16 @@
         "utility": "cpp",
         "cerrno": "cpp",
         "cstring": "cpp",
-        "memory": "cpp"
+        "memory": "cpp",
+        "vector": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "chrono": "cpp",
+        "fstream": "cpp",
+        "functional": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "string_view": "cpp",
+        "thread": "cpp"
     }
 }

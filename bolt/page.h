@@ -2,6 +2,7 @@
 #define __BOLT_PAGE_H
 
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -10,7 +11,7 @@ class Meta;
 class LeafPageElement;
 class BranchPageElement;
 
-enum class PageFlag {
+enum PageFlag {
   BranchPageFlag = 0x01,
   LeafPageFlag = 0x02,
   MetaPageFlag = 0x04,
@@ -21,8 +22,15 @@ inline PageFlag operator|(PageFlag a, PageFlag b) {
   return static_cast<PageFlag>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+template <typename T, typename U> size_t offsetOf(U T::*member) {
+  return (char *)&((T *)nullptr->*member) - (char *)nullptr;
+}
+
 class Page {
 public:
+  static size_t pagehsz() { return offsetOf(&Page::ptr); }
+  Page(pgid id, std::uint16_t flag, std::uintptr_t ptr)
+      : id(id), flags(flag), ptr(ptr), count(0), overflow(0) {}
   // type returns a human readable page type string used for debugging.
   std::string type() const;
   // meta returns a pointer to the metadata section of the page.
@@ -52,6 +60,7 @@ private:
 // LeafPageElement represents a node on a leaf page.
 class LeafPageElement {
 public:
+  static size_t elementSize() { return sizeof LeafPageElement(); }
   std::string key() const;
   std::string value() const;
 
@@ -65,6 +74,7 @@ private:
 // BranchPageElement represents a node on a branch page.
 class BranchPageElement {
 public:
+  static size_t elementSize() { return sizeof BranchPageElement(); }
   std::string key() const;
 
 private:
@@ -80,5 +90,10 @@ struct PageInfo {
   int count;
   int overflowClount;
 };
+
+// const size_t pageHeaderSize = offsetOf(&Page::ptr);
+extern const size_t pageHeaderSize;
+extern const size_t leafPageElementSize;
+extern const size_t branchPageElementSize;
 
 #endif
