@@ -24,14 +24,14 @@ public:
   // sizeLessThan returns true if the node is less than a given size.
   // This is an optimization to avoid calculating a large node when we
   // only need to know if it fits inside a certain page size.
-  bool sizeLessThan(int v);
+  bool sizeLessThan(int v) const;
 
   // pageElementSize returns the size of each page element based on the type of
   // node.
   int pageElementSize() const;
 
   // childAt returns the child node at a given index.
-  Node *childAt(int index);
+  Node *childAt(int index) const;
 
 private:
   Bucket *bucket;

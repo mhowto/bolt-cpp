@@ -1,4 +1,6 @@
 #include "node.h"
+#include "bucket.h"
+#include <iostream>
 
 extern const size_t pageHeaderSize;
 extern const size_t leafPageElementSize;
@@ -15,4 +17,14 @@ int Node::size() const {
 
 int Node::pageElementSize() const {
   return this->isLeaf ? leafPageElementSize : branchPageElementSize;
+}
+
+bool Node::sizeLessThan(int v) const { return this->size() < v; }
+
+Node *Node::childAt(int index) const {
+  if (this->isLeaf) {
+    std::cerr << "invalid childAt(" << index << ") on a leaf node";
+    std::exit(1);
+  }
+  return this->bucket->nodes(this->inodes[index]->id, this);
 }
