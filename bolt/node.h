@@ -2,6 +2,7 @@
 #define __BOLT_NODE_H
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 class Bucket;
@@ -32,6 +33,10 @@ public:
 
   // childAt returns the child node at a given index.
   Node *childAt(int index) const;
+
+  // put inserts a key/value
+  void put(std::string oldKey, std::string newKey, std::string value, pgid id,
+           std::uint32_t flags);
 
 private:
   Bucket *bucket;

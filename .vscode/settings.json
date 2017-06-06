@@ -42,5 +42,6 @@
         "ratio": "cpp",
         "string_view": "cpp",
         "thread": "cpp"
-    }
+    },
+    "editor.formatOnSave": true
 }

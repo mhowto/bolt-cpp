@@ -6,6 +6,13 @@ extern const size_t pageHeaderSize;
 extern const size_t leafPageElementSize;
 extern const size_t branchPageElementSize;
 
+Node *Node::root() {
+  if (this->parent == nullptr) {
+    return this;
+  }
+  return this->parent->root();
+}
+
 int Node::size() const {
   int sz = pageHeaderSize;
   int elsz = this->pageElementSize();
@@ -26,5 +33,5 @@ Node *Node::childAt(int index) const {
     std::cerr << "invalid childAt(" << index << ") on a leaf node";
     std::exit(1);
   }
-  return this->bucket->nodes(this->inodes[index]->id, this);
+  return this->bucket->node(this->inodes[index]->id, this);
 }
