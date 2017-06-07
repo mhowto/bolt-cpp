@@ -1,6 +1,7 @@
 #ifndef __BOLT_NODE_H
 #define __BOLT_NODE_H
 
+#include "slice.h"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -35,8 +36,11 @@ public:
   Node *childAt(int index) const;
 
   // put inserts a key/value
-  void put(std::string oldKey, std::string newKey, std::string value, pgid id,
-           std::uint32_t flags);
+  void put(const Slice &oldKey, const Slice &newKey, const Slice &value,
+           pgid id, std::uint32_t flags);
+
+  // del removes a key from the node.
+  void del(const Slice &key);
 
 private:
   Bucket *bucket;
