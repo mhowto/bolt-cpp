@@ -8,6 +8,7 @@
 
 class Bucket;
 struct INode;
+class Page;
 
 typedef std::uint64_t pgid;
 
@@ -35,6 +36,18 @@ public:
   // childAt returns the child node at a given index.
   Node *childAt(int index) const;
 
+  // childIndex returns the index of a given child node.
+  int childIndex(Node *child);
+
+  // numChildren returns the number of children.
+  int numChildren();
+
+  // nextSibling returns the next node with the same parent.
+  Node *nextSibling();
+
+  // prevSibling returns the previous node with the same parent.
+  Node *prevSibling();
+
   // put inserts a key/value
   void put(const Slice &oldKey, const Slice &newKey, const Slice &value,
            pgid id, std::uint32_t flags);
@@ -42,7 +55,48 @@ public:
   // del removes a key from the node.
   void del(const Slice &key);
 
+  // write writes the items onto one or more pages.
+  // The caller is responsible for allocating a page with enough memory to store
+  // the node.
+  void write(Page *p);
+
+  // read initializes the node from a page.
+  void read(Page *p);
+
+  // spill writes the nodes to dirty pages and splits nodes as it goes.
+  // Throws an runtime_error if dirty pages cannot be allocated.
+  void spill();
+
+  // rebalance attempts to combine the node with sibling nodes if the node's
+  // filled size is below a threshold or if there are not enough keys.
+  void rebalance();
+
+  // removes a node from the list of in-memory children.
+  // This does not affect the inodes.
+  void removeChild(Node *node);
+
+  // dereference causes the node to copy all its inode key/value references to
+  // heap memory. This is required when the mmap is reallocated so inodes are
+  // not pointing to stale data.
+  void dereference();
+
+  // free adds the node's underlying page to thre freelist.
+  void free();
+
 private:
+  // split breaks up a node into multiple smaller nodes, if appropriate.
+  // This should only be called from the spill() function.
+  std::vector<Node *> split(int pageSize);
+
+  // splitTwo breaks up a node into two smaller nodes, if appropriate.
+  // This should only be called from the split() function.
+  std::pair<Node *, Node *> splitTwo(int pageSize);
+
+  // splitIndex finds the position where a page will fill a given threshold.
+  // It returns the index as well as the size of the first page.
+  // This is noly be called from split().
+  std::pair<int, int> splitIndex(int threshold);
+
   Bucket *bucket;
   bool isLeaf;
   bool unbalanced;
