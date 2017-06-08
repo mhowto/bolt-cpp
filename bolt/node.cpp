@@ -1,5 +1,6 @@
 #include "node.h"
 #include "bucket.h"
+#include <algorithm>
 #include <iostream>
 
 extern const size_t pageHeaderSize;
@@ -34,4 +35,16 @@ Node *Node::childAt(int index) const {
     std::exit(1);
   }
   return this->bucket->node(this->inodes[index]->id, this);
+}
+
+int Node::childIndex(Node *child) {
+  auto first =
+      std::lower_bound(this->inodes.begin(), this->inodes.end(), *child);
+  if (first == this->inodes.end()) {
+    return -1;
+  }
+  if (::strcmp((*first)->key, child->key_) == 0) {
+    return first - this->inodes.begin();
+  }
+  return -1;
 }

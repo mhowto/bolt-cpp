@@ -3,11 +3,12 @@
 
 #include "slice.h"
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 
 class Bucket;
-struct INode;
+// struct INode;
 class Page;
 
 typedef std::uint64_t pgid;
@@ -15,6 +16,8 @@ typedef std::uint64_t pgid;
 // Node represents an in-memory, deserialized page.
 class Node {
 public:
+  const char *key() const { return key_; }
+
   // root returns the top-level node this node is attached to.
   Node *root();
 
@@ -83,6 +86,10 @@ public:
   // free adds the node's underlying page to thre freelist.
   void free();
 
+  friend bool operator<(const Node &lhs, const Node &rhs) {
+    return ::strcmp(lhs.key_, rhs.key_) < 0;
+  }
+
 private:
   // split breaks up a node into multiple smaller nodes, if appropriate.
   // This should only be called from the spill() function.
@@ -101,11 +108,11 @@ private:
   bool isLeaf;
   bool unbalanced;
   bool spilled;
-  char *key;
+  char *key_;
   pgid id;
   Node *parent;
   std::vector<Node *> children;
-  std::vector<INode *> inodes;
+  std::vector<struct INode *> inodes;
 };
 
 // INode represents an internal node inside of a node.
@@ -118,6 +125,20 @@ struct INode {
   int keySize;
   char *value;
   int valueSize;
+  friend bool operator<(const INode &lhs, const Node &rhs) {
+    return ::strcmp(lhs.key, rhs.key()) < 0;
+  }
+  friend bool operator<(const INode *lhs, const Node &rhs) {
+    return ::strcmp(lhs->key, rhs.key()) < 0;
+  }
 };
+
+inline bool operator>(const Node &lhs, const Node &rhs) { return rhs < lhs; }
+inline bool operator<=(const Node &lhs, const Node &rhs) {
+  return !(rhs < lhs);
+}
+inline bool operator>=(const Node &lhs, const Node &rhs) {
+  return !(lhs < rhs);
+}
 
 #endif
