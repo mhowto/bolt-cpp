@@ -48,3 +48,10 @@ int Node::childIndex(Node *child) {
   }
   return -1;
 }
+
+void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
+               pgid id, std::uint32_t flags) {
+  int i = 0;
+  i++;
+  return;
+}
