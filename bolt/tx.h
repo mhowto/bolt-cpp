@@ -1,6 +1,8 @@
 #ifndef __BOLT_TX_H
 #define __BOLT_TX_H
 
+#include <gsl/gsl>
+
 class DB;
 class Meta;
 class Bucket;
@@ -12,6 +14,8 @@ class Bucket;
 // keys.
 class Tx {
 public:
+  const Meta *meta() { return meta_; }
+
   // writeFlag specifies the flag for write-related methods like WriteTo().
   // Tx opens the database file with the specified flag to copy the data.
   //
@@ -24,7 +28,8 @@ private:
   bool writable;
   bool managed;
   DB *db;
-  Bucket *root;
+  Meta *meta_;
+  gsl::owner<Bucket *> root;
   std::map<pgid, Page *> pages;
   // TxStats stats;
   // std::vector<> commitHandlers;

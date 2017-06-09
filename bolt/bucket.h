@@ -26,6 +26,8 @@ public:
   // node creates a node from a page and associates it with a given parent.
   Node *node(pgid id, const Node *parent);
 
+  gsl::not_null<Tx *> tx() { return tx_; }
+
   // Sets the threshold for filling nodes when they split. By default,
   // the bucket will fill to 50% but it can be useful to increase this
   // amount if you know that your write workloads are mostly append-only.
@@ -35,7 +37,7 @@ public:
 
 private:
   gsl::owner<bucket *> bucket_;
-  Tx *tx;                                   // the associated transaction
+  Tx *tx_;                                  // the associated transaction
   std::map<std::string, Bucket *> buckets_; // subbucket cache
   Page *page;                               // inline page reference
   Node *rootNode;               // materialized node for the root page

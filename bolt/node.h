@@ -8,10 +8,36 @@
 #include <vector>
 
 class Bucket;
-// struct INode;
 class Page;
 
 typedef std::uint64_t pgid;
+
+// INode represents an internal node inside of a node.
+// It can be used to point to elements in a page or
+// point to an element which hasn't been added to a page yet.
+struct INode {
+  std::uint32_t flags;
+  pgid id;
+  const char *key;
+  int keySize;
+  const char *value;
+  int valueSize;
+  friend bool operator<(const INode &lhs, const INode &rhs) {
+    return ::strcmp(lhs.key, rhs.key) < 0;
+  }
+};
+
+inline bool operator<(const INode &n, const Slice &key) {
+  return ::strcmp(n.key, key.data()) < 0;
+}
+
+inline bool operator==(const INode &n, const Slice &key) {
+  return ::strcmp(n.key, key.data()) == 0;
+}
+
+inline bool operator==(const INode &n, const char *key) {
+  return ::strcmp(n.key, key) == 0;
+}
 
 // Node represents an in-memory, deserialized page.
 class Node {
@@ -40,16 +66,16 @@ public:
   Node *childAt(int index) const;
 
   // childIndex returns the index of a given child node.
-  int childIndex(Node *child);
+  int childIndex(Node *child) const;
 
   // numChildren returns the number of children.
-  int numChildren();
+  int numChildren() const;
 
   // nextSibling returns the next node with the same parent.
-  Node *nextSibling();
+  Node *nextSibling() const;
 
   // prevSibling returns the previous node with the same parent.
-  Node *prevSibling();
+  Node *prevSibling() const;
 
   // put inserts a key/value
   void put(const Slice &oldKey, const Slice &newKey, const Slice &value,
@@ -112,33 +138,7 @@ private:
   pgid id;
   Node *parent;
   std::vector<Node *> children;
-  std::vector<struct INode *> inodes;
+  std::vector<INode> inodes;
 };
-
-// INode represents an internal node inside of a node.
-// It can be used to point to elements in a page or
-// point to an element which hasn't been added to a page yet.
-struct INode {
-  std::uint32_t flags;
-  pgid id;
-  char *key;
-  int keySize;
-  char *value;
-  int valueSize;
-  friend bool operator<(const INode &lhs, const Node &rhs) {
-    return ::strcmp(lhs.key, rhs.key()) < 0;
-  }
-  friend bool operator<(const INode *lhs, const Node &rhs) {
-    return ::strcmp(lhs->key, rhs.key()) < 0;
-  }
-};
-
-inline bool operator>(const Node &lhs, const Node &rhs) { return rhs < lhs; }
-inline bool operator<=(const Node &lhs, const Node &rhs) {
-  return !(rhs < lhs);
-}
-inline bool operator>=(const Node &lhs, const Node &rhs) {
-  return !(lhs < rhs);
-}
 
 #endif

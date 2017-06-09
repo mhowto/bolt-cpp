@@ -41,7 +41,20 @@
         "optional": "cpp",
         "ratio": "cpp",
         "string_view": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "gsl": "cpp",
+        "gsl_assert": "cpp",
+        "csignal": "cpp",
+        "cstdarg": "cpp",
+        "atomic": "cpp",
+        "bitset": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "csetjmp": "cpp",
+        "mutex": "cpp",
+        "numeric": "cpp",
+        "multi_span": "cpp",
+        "string_span": "cpp"
     },
     "editor.formatOnSave": true
 }
