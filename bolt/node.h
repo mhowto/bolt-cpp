@@ -42,6 +42,8 @@ inline bool operator==(const INode &n, const char *key) {
 // Node represents an in-memory, deserialized page.
 class Node {
 public:
+  Node(Bucket *bucket, Node *parent) : bucket_(bucket), parent_(parent) {}
+
   const char *key() const { return key_; }
 
   // root returns the top-level node this node is attached to.
@@ -130,13 +132,13 @@ private:
   // This is noly be called from split().
   std::pair<int, int> splitIndex(int threshold);
 
-  Bucket *bucket;
+  Bucket *bucket_;
   bool isLeaf;
   bool unbalanced;
   bool spilled;
   char *key_;
   pgid id;
-  Node *parent;
+  Node *parent_;
   std::vector<Node *> children;
   std::vector<INode> inodes;
 };

@@ -13,7 +13,6 @@ public:
   pgid pgID() const { return id_; }
   txid txID() const { return txid_; }
 
-private:
   std::uint32_t magic;
   std::uint32_t version;
   std::uint32_t pageSize;

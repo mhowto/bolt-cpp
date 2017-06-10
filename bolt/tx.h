@@ -1,11 +1,16 @@
 #ifndef __BOLT_TX_H
 #define __BOLT_TX_H
 
-#include <gsl/gsl>
+#include "gsl/gsl"
+#include <cstdint>
+#include <map>
 
 class DB;
 class Meta;
 class Bucket;
+class Page;
+
+typedef std::uint64_t pgid;
 
 // Tx represents a read-only or read/write transaction on the database.
 // Read-only transactions can be used for retrieving values for keys and
@@ -14,6 +19,7 @@ class Bucket;
 // keys.
 class Tx {
 public:
+  Tx(DB *db);
   const Meta *meta() { return meta_; }
 
   // writeFlag specifies the flag for write-related methods like WriteTo().
@@ -27,8 +33,8 @@ public:
 private:
   bool writable;
   bool managed;
-  DB *db;
-  Meta *meta_;
+  DB *db_;
+  gsl::owner<Meta *> meta_;
   gsl::owner<Bucket *> root;
   std::map<pgid, Page *> pages;
   // TxStats stats;

@@ -2,6 +2,12 @@ set(GTEST_ROOT ${MAINFOLDER}/thirdparty/googletest-release-1.8.0/googletest)
 
 set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
 set(GTEST_LIBRARIES gtest gtest_main)
+
+set(GSL_ROOT ${MAINFOLDER}/thirdparty/GSL)
+set(GSL_INCLUDE_DIR ${GSL_ROOT}/include)
+set(GSL_LIBRARIES GSL)
+include_directories(${GSL_INCLUDE_DIR})
+
 include_directories(${GTEST_INCLUDE_DIR})
 include_directories(${MAINFOLDER})
 

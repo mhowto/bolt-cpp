@@ -10,10 +10,10 @@ extern const size_t leafPageElementSize;
 extern const size_t branchPageElementSize;
 
 Node *Node::root() {
-  if (this->parent == nullptr) {
+  if (this->parent_ == nullptr) {
     return this;
   }
-  return this->parent->root();
+  return this->parent_->root();
 }
 
 int Node::size() const {
@@ -36,7 +36,7 @@ Node *Node::childAt(int index) const {
     std::cerr << "invalid childAt(" << index << ") on a leaf node";
     std::exit(1);
   }
-  return this->bucket->node(this->inodes[index].id, this);
+  return this->bucket_->node(this->inodes[index].id, this);
 }
 
 int Node::childIndex(Node *child) const {
@@ -55,7 +55,7 @@ int Node::numChildren() const { return this->inodes.size(); }
 
 void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
                pgid id, std::uint32_t flags) {
-  const Meta *meta = this->bucket->tx()->meta();
+  const Meta *meta = this->bucket_->tx()->meta();
   if (meta == nullptr) {
     std::cerr << "meta is null";
     std::exit(1);
