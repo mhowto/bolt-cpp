@@ -1,6 +1,7 @@
 #ifndef __BOLT_NODE_H
 #define __BOLT_NODE_H
 
+#include "gsl/gsl"
 #include "slice.h"
 #include <cstdint>
 #include <cstring>
@@ -68,7 +69,7 @@ public:
   Node *childAt(int index) const;
 
   // childIndex returns the index of a given child node.
-  int childIndex(Node *child) const;
+  int childIndex(const Node *child) const;
 
   // numChildren returns the number of children.
   int numChildren() const;
@@ -79,11 +80,15 @@ public:
   // prevSibling returns the previous node with the same parent.
   Node *prevSibling() const;
 
+  // get queries a value
+  int get(const Slice &key, std::string *value) const;
+
   // put inserts a key/value
   void put(const Slice &oldKey, const Slice &newKey, const Slice &value,
            pgid id, std::uint32_t flags);
 
   // del removes a key from the node.
+  // not thread-safe
   void del(const Slice &key);
 
   // write writes the items onto one or more pages.
@@ -134,7 +139,7 @@ private:
 
   Bucket *bucket_;
   bool isLeaf;
-  bool unbalanced;
+  bool unbalanced_;
   bool spilled;
   char *key_;
   pgid id;
