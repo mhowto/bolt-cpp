@@ -28,9 +28,9 @@ template <typename T, typename U> size_t offsetOf(U T::*member) {
 
 class Page {
 public:
-  static size_t pagehsz() { return offsetOf(&Page::ptr); }
+  static size_t pagehsz() { return offsetOf(&Page::ptr_); }
   Page(pgid id, std::uint16_t flag, std::uintptr_t ptr)
-      : id(id), flags(flag), ptr(ptr), count(0), overflow(0) {}
+      : id_(id), flags_(flag), ptr_(ptr), count_(0), overflow_(0) {}
   // type returns a human readable page type string used for debugging.
   std::string type() const;
   // meta returns a pointer to the metadata section of the page.
@@ -49,24 +49,36 @@ public:
   // dump writes n bytes of the page to STDERR as hex output.
   void hexdump(int n) const;
 
+  void setFlags(std::uint16_t flags) { this->flags_ |= flags; }
+  std::uint16_t flags() { return flags_; }
+
+  void setCount(std::uint32_t count) { this->count_ = count; }
+  std::uint32_t count() { return count_; }
+
+  void setOverflow() { this->overflow_ |= 0xffff; }
+  void unsetOverflow() { this->overflow_ &= 0x0000; }
+
+  pgid id() { return id_; }
+  std::uintptr_t ptr() { return ptr_; }
+
 private:
-  pgid id;
-  std::uint16_t flags;
-  std::uint32_t count;
-  std::uint32_t overflow;
-  std::uintptr_t ptr;
+  pgid id_;
+  std::uint16_t flags_;
+  std::uint32_t count_;
+  std::uint32_t overflow_;
+  std::uintptr_t ptr_;
 };
 
 // LeafPageElement represents a node on a leaf page.
 class LeafPageElement {
 public:
   static size_t elementSize() { return sizeof LeafPageElement(); }
+
   std::string key() const;
   std::string value() const;
 
-private:
   std::uint32_t flags;
-  std::uint32_t pos;
+  std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;
   std::uint32_t vsize;
 };
@@ -75,10 +87,10 @@ private:
 class BranchPageElement {
 public:
   static size_t elementSize() { return sizeof BranchPageElement(); }
+
   std::string key() const;
 
-private:
-  std::uint32_t pos;
+  std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;
   pgid id;
 };

@@ -54,7 +54,8 @@
         "mutex": "cpp",
         "numeric": "cpp",
         "multi_span": "cpp",
-        "string_span": "cpp"
+        "string_span": "cpp",
+        "span": "cpp"
     },
     "editor.formatOnSave": true
 }

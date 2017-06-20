@@ -43,7 +43,8 @@ inline bool operator==(const INode &n, const char *key) {
 // Node represents an in-memory, deserialized page.
 class Node {
 public:
-  Node(Bucket *bucket, Node *parent) : bucket_(bucket), parent_(parent) {}
+  Node(Bucket *bucket, bool isLeaf, Node *parent)
+      : bucket_(bucket), isLeaf_(isLeaf), parent_(parent) {}
 
   const char *key() const { return key_; }
 
@@ -123,6 +124,11 @@ public:
     return ::strcmp(lhs.key_, rhs.key_) < 0;
   }
 
+  bool spilled() const { return spilled_; }
+  bool isLeaf() const { return isLeaf_; }
+  bool unbalanced() const { return unbalanced_; }
+  pgid id() const { return id_; }
+
 private:
   // split breaks up a node into multiple smaller nodes, if appropriate.
   // This should only be called from the spill() function.
@@ -138,11 +144,11 @@ private:
   std::pair<int, int> splitIndex(int threshold);
 
   Bucket *bucket_;
-  bool isLeaf;
+  bool isLeaf_;
   bool unbalanced_;
-  bool spilled;
+  bool spilled_;
   char *key_;
-  pgid id;
+  pgid id_;
   Node *parent_;
   std::vector<Node *> children;
   std::vector<INode> inodes;

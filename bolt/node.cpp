@@ -1,6 +1,7 @@
 #include "node.h"
 #include "bucket.h"
 #include "meta.h"
+#include "page.h"
 #include "tx.h"
 #include <algorithm>
 #include <iostream>
@@ -26,13 +27,13 @@ int Node::size() const {
 }
 
 int Node::pageElementSize() const {
-  return this->isLeaf ? leafPageElementSize : branchPageElementSize;
+  return this->isLeaf_ ? leafPageElementSize : branchPageElementSize;
 }
 
 bool Node::sizeLessThan(int v) const { return this->size() < v; }
 
 Node *Node::childAt(int index) const {
-  if (this->isLeaf) {
+  if (this->isLeaf_) {
     std::cerr << "invalid childAt(" << index << ") on a leaf node";
     std::exit(1);
   }
@@ -94,6 +95,7 @@ int Node::get(const Slice &key, std::string *value) const {
   return 0;
 }
 
+// TODO: value may be null
 void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
                pgid id, std::uint32_t flags) {
   const Meta *meta = this->bucket_->tx()->meta();
@@ -128,7 +130,9 @@ void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
   INode &inode = this->inodes[index];
   inode.flags = flags;
   inode.key = newKey.data();
+  inode.keySize = newKey.size();
   inode.value = value.data();
+  inode.valueSize = value.size();
   inode.id = id;
   if (::strlen(inode.key) <= 0) {
     std::cerr << "put: zero-length inode key\n";
@@ -151,4 +155,50 @@ void Node::del(const Slice &key) {
   this->inodes.erase(first);
   // Mark the node as needing rebalacing.
   this->unbalanced_ = true;
+}
+
+void Node::write(Page *p) {
+  // initilize page's header
+  if (this->isLeaf_) {
+    p->setFlags(LeafPageFlag);
+  } else {
+    p->setFlags(BranchPageFlag);
+  }
+  if (this->inodes.size() > 0xffff) {
+    std::cerr << "page's count is overflow: pgid = " << p->id();
+    std::exit(1);
+  }
+  p->unsetOverflow();
+  p->setCount(this->inodes.size());
+
+  if (p->count() == 0) {
+    return;
+  }
+
+  char *b = reinterpret_cast<char *>(
+      p->ptr() + (this->inodes.size() * this->pageElementSize()));
+  for (size_t i = 0; i < this->inodes.size(); ++i) {
+    const INode &n = this->inodes[i];
+    if (this->isLeaf_) {
+      LeafPageElement *elem = p->leafPageElement(i);
+      elem->flags = n.flags;
+      elem->ksize = n.keySize;
+      elem->vsize = n.valueSize;
+      elem->pos = static_cast<std::uint32_t>((char *)(b) - (char *)(elem));
+    } else {
+      BranchPageElement *elem = p->branchPageElement(i);
+      elem->ksize = n.keySize;
+      elem->id = n.id;
+      elem->pos = static_cast<std::uint32_t>((char *)(b) - (char *)(elem));
+      if (elem->id != p->id()) {
+        std::cerr << "write: circular dependency occured\n";
+        std::exit(1);
+      }
+    }
+
+    ::memcpy(b, n.key, n.keySize);
+    b += n.keySize;
+    ::memcpy(b, n.value, n.valueSize);
+    b += n.valueSize;
+  }
 }
