@@ -30,9 +30,12 @@ public:
   // the flag to syscall.O_DIRECT to avoid trashing the page cache.
   int writeFlag;
 
+  bool writable() { return writable_; }
+  bool managed() { return managed_; }
+
 private:
-  bool writable;
-  bool managed;
+  bool writable_;
+  bool managed_;
   DB *db_;
   gsl::owner<Meta *> meta_;
   gsl::owner<Bucket *> root;
