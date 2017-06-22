@@ -8,19 +8,19 @@ extern const size_t pageHeaderSize = Page::pagehsz();
 extern const size_t leafPageElementSize = LeafPageElement::elementSize();
 extern const size_t branchPageElementSize = BranchPageElement::elementSize();
 
-std::string LeafPageElement::key() const {
+Slice LeafPageElement::key() const {
   char *buf = reinterpret_cast<char *>(const_cast<LeafPageElement *>(this));
-  return std::string(buf + this->pos, this->ksize);
+  return Slice(buf + this->pos, this->ksize);
 }
 
-std::string LeafPageElement::value() const {
+Slice LeafPageElement::value() const {
   char *buf = reinterpret_cast<char *>(const_cast<LeafPageElement *>(this));
-  return std::string(buf + this->pos + this->ksize, this->vsize);
+  return Slice(buf + this->pos + this->ksize, this->vsize);
 }
 
-std::string BranchPageElement::key() const {
+Slice BranchPageElement::key() const {
   char *buf = reinterpret_cast<char *>(const_cast<BranchPageElement *>(this));
-  return std::string(buf + this->pos, this->ksize);
+  return Slice(buf + this->pos, this->ksize);
 }
 
 std::string Page::type() const {

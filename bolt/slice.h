@@ -76,7 +76,7 @@ public:
 
   // Return true iff "x" is a prefix of "*this"
   bool starts_with(const Slice &x) const {
-    return ((size_ >= x.size_) && (memcmp(data_, x.data_, x.size_) == 0));
+    return ((size_ >= x.size_) && (std::memcmp(data_, x.data_, x.size_) == 0));
   }
 
   bool ends_with(const Slice &x) const {
@@ -129,7 +129,15 @@ struct SliceParts {
 
 inline bool operator==(const Slice &x, const Slice &y) {
   return ((x.size() == y.size()) &&
-          (::memcmp(x.data(), y.data(), x.size()) == 0));
+          (std::memcmp(x.data(), y.data(), x.size()) == 0));
+}
+
+inline bool operator<(const Slice &x, const Slice &y) {
+  size_t s1 = x.size();
+  size_t s2 = y.size();
+  size_t s = (s1 < s2) ? s1 : s2;
+  int result = std::memcmp(x.data(), y.data(), s);
+  return (result < 0) || (result == 0 && s1 < s2);
 }
 
 inline bool operator!=(const Slice &x, const Slice &y) { return !(x == y); }

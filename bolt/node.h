@@ -1,7 +1,6 @@
 #ifndef __BOLT_NODE_H
 #define __BOLT_NODE_H
 
-#include "gsl/gsl"
 #include "slice.h"
 #include <cstdint>
 #include <cstring>
@@ -19,26 +18,21 @@ typedef std::uint64_t pgid;
 struct INode {
   std::uint32_t flags;
   pgid id;
-  const char *key;
-  int keySize;
-  const char *value;
-  int valueSize;
-  friend bool operator<(const INode &lhs, const INode &rhs) {
-    return ::strcmp(lhs.key, rhs.key) < 0;
-  }
+  Slice key;
+  Slice value;
 };
 
-inline bool operator<(const INode &n, const Slice &key) {
-  return ::strcmp(n.key, key.data()) < 0;
+inline bool operator<(const INode &lhs, const INode &rhs) {
+  return lhs.key < rhs.key;
 }
+
+inline bool operator<(const INode &n, const Slice &key) { return n.key < key; }
 
 inline bool operator==(const INode &n, const Slice &key) {
-  return ::strcmp(n.key, key.data()) == 0;
+  return n.key == key;
 }
 
-inline bool operator==(const INode &n, const char *key) {
-  return ::strcmp(n.key, key) == 0;
-}
+inline bool operator==(const INode &n, const char *key) { return n.key == key; }
 
 // Node represents an in-memory, deserialized page.
 class Node {
@@ -46,7 +40,7 @@ public:
   Node(Bucket *bucket, bool isLeaf, Node *parent)
       : bucket_(bucket), isLeaf_(isLeaf), parent_(parent) {}
 
-  const char *key() const { return key_; }
+  Slice key() const { return key_; }
 
   // root returns the top-level node this node is attached to.
   Node *root();
@@ -121,7 +115,7 @@ public:
   void free();
 
   friend bool operator<(const Node &lhs, const Node &rhs) {
-    return ::strcmp(lhs.key_, rhs.key_) < 0;
+    return lhs.key_ < rhs.key_;
   }
 
   bool spilled() const { return spilled_; }
@@ -147,7 +141,7 @@ private:
   bool isLeaf_;
   bool unbalanced_;
   bool spilled_;
-  char *key_;
+  Slice key_;
   pgid id_;
   Node *parent_;
   std::vector<Node *> children;

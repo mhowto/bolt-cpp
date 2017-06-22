@@ -1,6 +1,7 @@
 #ifndef __BOLT_PAGE_H
 #define __BOLT_PAGE_H
 
+#include "slice.h"
 #include <cstdint>
 #include <iostream>
 #include <string>
@@ -74,8 +75,8 @@ class LeafPageElement {
 public:
   static size_t elementSize() { return sizeof LeafPageElement(); }
 
-  std::string key() const;
-  std::string value() const;
+  Slice key() const;
+  Slice value() const;
 
   std::uint32_t flags;
   std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
@@ -88,7 +89,7 @@ class BranchPageElement {
 public:
   static size_t elementSize() { return sizeof BranchPageElement(); }
 
-  std::string key() const;
+  Slice key() const;
 
   std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;

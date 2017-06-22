@@ -66,3 +66,23 @@ TEST(NodeTest, WriteFunc) {
 
   std::free(p1);
 }
+
+TEST(NodeTest, ReadFunc) {
+  Tx tx(nullptr);
+  Bucket bucket(&tx);
+  Node n(&bucket, true, nullptr);
+  n.put("a", "a", "value_a", 1, 0);
+  n.put("ab", "ab", "value_ab", 1, 0);
+  n.put("abc", "abc", "value_abc", 1, 0);
+
+  char *p1 = (char *)std::malloc(100 * sizeof(char));
+  Page p(1, 0, (std::uintptr_t)(p1));
+  n.write(&p);
+  Node nn(&bucket, true, nullptr);
+  nn.read(&p);
+  assert_value(&nn, "a", "value_a");
+  assert_value(&nn, "ab", "value_ab");
+  assert_value(&nn, "abc", "value_abc");
+
+  std::free(p1);
+}

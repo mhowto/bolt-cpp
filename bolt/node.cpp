@@ -4,6 +4,7 @@
 #include "page.h"
 #include "tx.h"
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 
 extern const size_t pageHeaderSize;
@@ -21,7 +22,7 @@ int Node::size() const {
   int sz = pageHeaderSize;
   int elsz = this->pageElementSize();
   for (auto &inode : this->inodes) {
-    sz += elsz + inode.keySize + inode.valueSize;
+    sz += elsz + inode.key.size() + inode.value.size();
   }
   return sz;
 }
@@ -91,7 +92,7 @@ int Node::get(const Slice &key, std::string *value) const {
     return -1;
   }
   const INode &inode = *first;
-  value->assign(inode.value);
+  value->assign(inode.value.data(), inode.value.size());
   return 0;
 }
 
@@ -129,12 +130,10 @@ void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
   }
   INode &inode = this->inodes[index];
   inode.flags = flags;
-  inode.key = newKey.data();
-  inode.keySize = newKey.size();
-  inode.value = value.data();
-  inode.valueSize = value.size();
+  inode.key = newKey;
+  inode.value = value;
   inode.id = id;
-  if (::strlen(inode.key) <= 0) {
+  if (inode.key.size() <= 0) {
     std::cerr << "put: zero-length inode key\n";
     std::exit(-1);
   }
@@ -182,12 +181,12 @@ void Node::write(Page *p) {
     if (this->isLeaf_) {
       LeafPageElement *elem = p->leafPageElement(i);
       elem->flags = n.flags;
-      elem->ksize = n.keySize;
-      elem->vsize = n.valueSize;
+      elem->ksize = n.key.size();
+      elem->vsize = n.value.size();
       elem->pos = static_cast<std::uint32_t>((char *)(b) - (char *)(elem));
     } else {
       BranchPageElement *elem = p->branchPageElement(i);
-      elem->ksize = n.keySize;
+      elem->ksize = n.key.size();
       elem->id = n.id;
       elem->pos = static_cast<std::uint32_t>((char *)(b) - (char *)(elem));
       if (elem->id != p->id()) {
@@ -196,9 +195,44 @@ void Node::write(Page *p) {
       }
     }
 
-    ::memcpy(b, n.key, n.keySize);
-    b += n.keySize;
-    ::memcpy(b, n.value, n.valueSize);
-    b += n.valueSize;
+    std::memcpy(b, n.key.data(), n.key.size());
+    b += n.key.size();
+    std::memcpy(b, n.value.data(), n.value.size());
+    b += n.value.size();
   }
+}
+
+void Node::read(Page *p) {
+  // initilize node's header
+  std::string s;
+  this->id_ = p->id();
+  this->isLeaf_ = (p->flags() & LeafPageFlag) ? true : false;
+  this->inodes.clear();
+  this->inodes.reserve(p->count());
+
+  for (size_t i = 0; i < p->count(); i++) {
+    INode inode;
+    if (this->isLeaf_) {
+      LeafPageElement *elem = p->leafPageElement(i);
+      inode.flags = elem->flags;
+      inode.key = elem->key();
+      inode.value = elem->value();
+    } else {
+      BranchPageElement *elem = p->branchPageElement(i);
+      INode inode;
+      inode.id = elem->id;
+      inode.key = elem->key();
+    }
+    if (inode.key.size() <= 0) {
+      std::cerr << "read: zero-length inode key\n";
+      std::exit(1);
+    }
+    this->inodes.push_back(std::move(inode));
+    if (this->inodes.size() > 0) {
+      this->key_ = this->inodes[0].key;
+      assert(this->key_.size() > 0);
+    }
+  }
+
+  // Save first key so we can find the node in the parent when we spill.
 }

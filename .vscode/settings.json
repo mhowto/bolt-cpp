@@ -55,7 +55,8 @@
         "numeric": "cpp",
         "multi_span": "cpp",
         "string_span": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "*.ipp": "cpp"
     },
     "editor.formatOnSave": true
 }
