@@ -228,11 +228,11 @@ void Node::read(Page *p) {
       std::exit(1);
     }
     this->inodes.push_back(std::move(inode));
-    if (this->inodes.size() > 0) {
-      this->key_ = this->inodes[0].key;
-      assert(this->key_.size() > 0);
-    }
   }
 
   // Save first key so we can find the node in the parent when we spill.
+  if (this->inodes.size() > 0) {
+    this->key_ = this->inodes[0].key;
+    assert(this->key_.size() > 0);
+  }
 }
