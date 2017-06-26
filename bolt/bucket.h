@@ -51,10 +51,6 @@ public:
   // The bucket instance is only valid for the lifetime of the transaction.
   Bucket *bucket(Slice name);
 
-  // Helper method that re-interprets a sub-bucket value from
-  // a parent into a Bucket.
-  Bucket *openBucket(Slice value);
-
   // createBucket creates a new bucket at the given key and returns the new
   // bucket.
   // Returns an error if the key already exists, if the bucket name is blank, or
@@ -92,6 +88,10 @@ public:
   double fillPercent;
 
 private:
+  // Helper method that re-interprets a sub-bucket value from
+  // a parent into a Bucket.
+  Bucket *openBucket(Slice value);
+
   struct bucket bucket_;
   gsl::not_null<Tx *> tx_;                  // the associated transaction
   std::map<std::string, Bucket *> buckets_; // subbucket cache
