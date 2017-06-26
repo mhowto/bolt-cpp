@@ -3,6 +3,7 @@
 
 #include "slice.h"
 #include <optional>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -30,34 +31,37 @@ public:
   // first moves the cursor to the first item in the bucket and returns its key
   // and value. If the bucket is empty then an empty key and value are returned.
   // The returned key and value are only valid for the life of the transaction.
-  std::optional<std::pair<Slice, Slice>> first();
+  std::pair<std::optional<Slice>, std::optional<Slice>> first();
 
   // last moves the cursor to the last item in the bucket and returns its key
   // and value. If the bucket is empty then an empty key and value are returned.
   // The returned key and value are only valid for the life of the transaction.
-  std::optional<std::pair<Slice, Slice>> last();
+  std::pair<std::optional<Slice>, std::optional<Slice>> last();
 
   // next moves the cursor to the next item in the bucket and returns its key
   // and value. If the bucket is at the end of the bucket then a nil key and
   // value are returned. The returned key and value are only valid for the life
   // of the transaction.
-  std::optional<std::pair<Slice, Slice>> next();
+  std::pair<std::optional<Slice>, std::optional<Slice>> next();
 
   // prev moves the cursor to the previous item in the bucket and returns its
   // key and value. If the bucket is at the beginning of the bucket then a nil
   // key and value are returned. The returned key and value are only valid for
   // the life of the transaction.
-  std::optional<std::pair<Slice, Slice>> prev();
+  std::pair<std::optional<Slice>, std::optional<Slice>> prev();
 
   // seek moves the cursor to a given key and returns it.
   // If the key does not exist then the next key is used. If no keys follow, a
   // nil key is returned.
   // The returned key and value are only valid for the life of the transaction.
-  std::optional<std::pair<Slice, Slice>> seek(const Slice &seek);
+  std::pair<std::optional<Slice>, std::optional<Slice>> seek(const Slice &seek);
+
+  std::tuple<std::optional<Slice>, std::optional<Slice>, int> keyValue();
 
   // deleteCurrent removes the current key/value under the cursor from the
   // bucket.
-  // deleteCurrent fails if current key/value is a bucket or if the transaction
+  // deleteCurrent fails if current key/value is a bucket or if the
+  // transaction
   // is not writable.
   void deleteCurrent();
 

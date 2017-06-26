@@ -19,6 +19,8 @@ enum PageFlag {
   FreelistPageFlag = 0x10,
 };
 
+const int BucketLeafFlag = 0x01;
+
 inline PageFlag operator|(PageFlag a, PageFlag b) {
   return static_cast<PageFlag>(static_cast<int>(a) | static_cast<int>(b));
 }

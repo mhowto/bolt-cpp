@@ -80,6 +80,8 @@ public:
   // nextSequence returns an autoincrementing integer for the bucket.
   std::uint64_t nextSequence();
 
+  std::pair<Page *, Node *> pageNode(pgid id);
+
   // Sets the threshold for filling nodes when they split. By default,
   // the bucket will fill to 50% but it can be useful to increase this
   // amount if you know that your write workloads are mostly append-only.
