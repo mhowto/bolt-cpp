@@ -31,7 +31,7 @@ class Page {
 public:
   static size_t pagehsz() { return offsetOf(&Page::ptr_); }
   Page(pgid id, std::uint16_t flag, std::uintptr_t ptr)
-      : id_(id), flags_(flag), ptr_(ptr), count_(0), overflow_(0) {}
+      : id_(id), flags_(flag), count_(0), overflow_(0), ptr_(ptr) {}
   // type returns a human readable page type string used for debugging.
   std::string type() const;
   // meta returns a pointer to the metadata section of the page.

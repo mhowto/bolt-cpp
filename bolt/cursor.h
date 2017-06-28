@@ -1,6 +1,11 @@
 #ifndef __BOLT_CURSOR_H
 #define __BOLT_CURSOR_H
 
+#include "slice.h"
+#include <optional>
+#include <utility>
+#include <vector>
+
 class Bucket;
 class Page;
 class Node;
@@ -19,6 +24,43 @@ class Node;
 // after mutating data.
 class Cursor {
 public:
+  // bucket returns the bucket that this cursor was created from.
+  Bucket *bucket() { return bucket_; }
+
+  // first moves the cursor to the first item in the bucket and returns its key
+  // and value. If the bucket is empty then an empty key and value are returned.
+  // The returned key and value are only valid for the life of the transaction.
+  std::optional<std::pair<Slice, Slice>> first();
+
+  // last moves the cursor to the last item in the bucket and returns its key
+  // and value. If the bucket is empty then an empty key and value are returned.
+  // The returned key and value are only valid for the life of the transaction.
+  std::optional<std::pair<Slice, Slice>> last();
+
+  // next moves the cursor to the next item in the bucket and returns its key
+  // and value. If the bucket is at the end of the bucket then a nil key and
+  // value are returned. The returned key and value are only valid for the life
+  // of the transaction.
+  std::optional<std::pair<Slice, Slice>> next();
+
+  // prev moves the cursor to the previous item in the bucket and returns its
+  // key and value. If the bucket is at the beginning of the bucket then a nil
+  // key and value are returned. The returned key and value are only valid for
+  // the life of the transaction.
+  std::optional<std::pair<Slice, Slice>> prev();
+
+  // seek moves the cursor to a given key and returns it.
+  // If the key does not exist then the next key is used. If no keys follow, a
+  // nil key is returned.
+  // The returned key and value are only valid for the life of the transaction.
+  std::optional<std::pair<Slice, Slice>> seek(const Slice &seek);
+
+  // deleteCurrent removes the current key/value under the cursor from the
+  // bucket.
+  // deleteCurrent fails if current key/value is a bucket or if the transaction
+  // is not writable.
+  void deleteCurrent();
+
 private:
   Bucket *bucket_;
   std::vector<struct elemRef> stack_;
