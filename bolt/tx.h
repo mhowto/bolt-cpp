@@ -33,6 +33,8 @@ public:
   bool writable() { return writable_; }
   bool managed() { return managed_; }
 
+  DB *db() { return db_; }
+
 private:
   bool writable_;
   bool managed_;

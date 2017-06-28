@@ -33,7 +33,8 @@ public:
   // node creates a node from a page and associates it with a given parent.
   Node *node(pgid id, const Node *parent);
 
-  gsl::not_null<Tx *> tx() { return tx_; }
+  gsl::not_null<Tx *> tx();
+  //  { return tx_; }
 
   // root returns the root of the bucket.
   pgid root() { return bucket_.root; }

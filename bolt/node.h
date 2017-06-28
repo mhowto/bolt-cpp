@@ -144,7 +144,7 @@ private:
   Slice key_;
   pgid id_;
   Node *parent_;
-  std::vector<Node *> children;
+  std::vector<Node *> children; // help to record sub node during spilling
   std::vector<INode> inodes;
 };
 
