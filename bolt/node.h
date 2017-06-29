@@ -146,6 +146,8 @@ private:
   Node *parent_;
   std::vector<Node *> children; // help to record sub node during spilling
   std::vector<INode> inodes;
+
+  friend class Cursor;
 };
 
 #endif

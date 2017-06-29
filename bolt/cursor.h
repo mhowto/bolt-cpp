@@ -56,7 +56,9 @@ public:
   // The returned key and value are only valid for the life of the transaction.
   std::pair<std::optional<Slice>, std::optional<Slice>> seek(const Slice &seek);
 
-  std::tuple<std::optional<Slice>, std::optional<Slice>, int> keyValue();
+  // keyValue returns the key and value of the current leaf element.
+  std::tuple<std::optional<Slice>, std::optional<Slice>, std::uint32_t>
+  keyValue();
 
   // deleteCurrent removes the current key/value under the cursor from the
   // bucket.
@@ -66,6 +68,19 @@ public:
   void deleteCurrent();
 
 private:
+  // first_ moves the cursor to the first leaf element under the last page in
+  // the stack.
+  void first_();
+
+  void last_();
+
+  // next_ moves to the next leaf element and returns the key, value and flags.
+  // If the cursor is at the last leaf element then it stays there and returns
+  // nil.
+  std::tuple<std::optional<Slice>, std::optional<Slice>, std::uint32_t> next_();
+  void prev_();
+  void seek_();
+
   Bucket *bucket_;
   std::vector<struct elemRef> stack_;
 };
