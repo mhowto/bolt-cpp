@@ -5,9 +5,10 @@
 
 enum class byte : unsigned char {};
 typedef int FileMode;
+typedef std::uint64_t pgid;
 
 // Option represents the options that can be set when opening a database.
-struct Option{
+struct Option {
   // Timeout is the amount of time to wait to obtain a file lock.
   // When set to zero it will wait indefinitely. This option is only
   // available on Darwin and Linux.
@@ -27,18 +28,24 @@ struct Option{
   // in bytes. Read transactions won't block write transaction
   // if the InitialMmapSize is large enough to hold database mmap
   // size.
-  // 
+  //
   // If <= 0, the initial map size is 0.
   // If initialMmapSize is smaller than the previous database size,
   // it takes no effect;
   int InitialMmapSize;
 };
 
-//DB* open(std::string path, FileMode mode, Option* option);
+// DB* open(std::string path, FileMode mode, Option* option);
+
+class Page;
 
 class DB {
 public:
-  DB(std::string path, FileMode mode, Option* option);
+  DB(std::string path, FileMode mode, Option *option);
+
+  // page retrieves a page reference from the mmap based on the current page
+  // size.
+  Page *page(pgid id);
 
   std::string Path;
   int FileDescriptor;
@@ -52,6 +59,9 @@ public:
   bool ReadOnly;
 
   int MapFlags = 0;
+
+private:
+  int pageSize_;
 };
 
 #endif

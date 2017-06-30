@@ -57,7 +57,9 @@
         "string_span": "cpp",
         "span": "cpp",
         "*.ipp": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "__config": "cpp",
+        "__nullptr": "cpp"
     },
     "editor.formatOnSave": true
 }

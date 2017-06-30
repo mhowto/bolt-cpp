@@ -80,7 +80,12 @@ public:
   // nextSequence returns an autoincrementing integer for the bucket.
   std::uint64_t nextSequence();
 
+  // pageNode returns the in-memory node, if it exists.
+  // Otherwises returns the underlying page.
   std::pair<Page *, Node *> pageNode(pgid id);
+
+  // inline_ checks whether the bucket is inline
+  bool inline_();
 
   // Sets the threshold for filling nodes when they split. By default,
   // the bucket will fill to 50% but it can be useful to increase this

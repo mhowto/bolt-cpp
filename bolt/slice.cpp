@@ -73,5 +73,5 @@ std::tuple<std::string, bool> Slice::DecodeHex() const {
   }
   return std::make_tuple(result, true);
 failed:
-  return make_tuple(std::string(), false);
+  return std::make_tuple(std::string(), false);
 }
