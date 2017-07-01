@@ -84,7 +84,19 @@ public:
   std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;
   std::uint32_t vsize;
+  friend bool operator<(const LeafPageElement &lhs,
+                        const LeafPageElement &rhs) {
+    return lhs.key() < rhs.key();
+  }
 };
+
+inline bool operator==(const LeafPageElement &elem, const Slice &key) {
+  return elem.key() == key;
+}
+
+inline bool operator<(const LeafPageElement &elem, const Slice &key) {
+  return elem.key() < key;
+}
 
 // BranchPageElement represents a node on a branch page.
 class BranchPageElement {
@@ -96,7 +108,19 @@ public:
   std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;
   pgid id;
+  friend bool operator<(const BranchPageElement &lhs,
+                        const BranchPageElement &rhs) {
+    return lhs.key() < rhs.key();
+  }
 };
+
+inline bool operator==(const BranchPageElement &elem, const Slice &key) {
+  return elem.key() == key;
+}
+
+inline bool operator<(const BranchPageElement &elem, const Slice &key) {
+  return elem.key() < key;
+}
 
 // PageInfo represents human readdable information about a page.
 struct PageInfo {

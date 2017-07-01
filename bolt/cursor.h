@@ -10,6 +10,7 @@
 class Bucket;
 class Page;
 class Node;
+typedef std::uint64_t pgid;
 
 // Cursor represents an iterator that can traverse over all key/value pairs in a
 // bucket in sorted order.
@@ -78,8 +79,20 @@ private:
   // If the cursor is at the last leaf element then it stays there and returns
   // nil.
   std::tuple<std::optional<Slice>, std::optional<Slice>, std::uint32_t> next_();
-  void prev_();
-  void seek_();
+
+  // seek_ moves the cursor to a given key and returns it.
+  // If the key down not exist then the next key is used.
+  std::tuple<std::optional<Slice>, std::optional<Slice>, std::uint32_t>
+  seek_(const Slice &seek);
+
+  // search recursively performs a binary search against a given  page/node
+  // until it finds a given key.
+  void search(const Slice &key, pgid id);
+
+  void searchNode(const Slice &key, Node *n);
+  void searchPage(const Slice &key, Page *p);
+  // nsearch searches the leaf node on the top of the stack for a key.
+  void nsearch(const Slice &key);
 
   Bucket *bucket_;
   std::vector<struct elemRef> stack_;
