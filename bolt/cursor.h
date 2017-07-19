@@ -94,7 +94,14 @@ private:
   // nsearch searches the leaf node on the top of the stack for a key.
   void nsearch(const Slice &key);
 
+  // node returns the code that the cursor is currently positioned on.
+  Node *node();
+
   Bucket *bucket_;
+
+  // stack stores the ref of the elements on the path.
+  // ref0 -> ref1 -> ref2 -> ... -> refN
+  // refJ is in the refJ-1.inodes[refJ-1.index]
   std::vector<struct elemRef> stack_;
 };
 

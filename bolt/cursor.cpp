@@ -1,8 +1,8 @@
-
 #include "cursor.h"
 #include "bucket.h"
 #include "node.h"
 #include "page.h"
+#include "stdexcept"
 #include "tx.h"
 #include <cassert>
 #include <utility>
@@ -97,7 +97,7 @@ std::pair<std::optional<Slice>, std::optional<Slice>> Cursor::last() {
   this->stack_.push_back(std::move(elem));
   this->last_();
   auto[k, v, flags] = this->keyValue();
-  if (flags * BucketLeafFlag) {
+  if (flags & BucketLeafFlag) {
     return std::make_pair(k, std::optional<Slice>());
   }
   return std::make_pair(k, v);
@@ -311,4 +311,36 @@ void Cursor::nsearch(const Slice &key) {
   auto first = std::lower_bound(inodes.begin(), inodes.end(), key);
   int index = first - inodes.begin();
   ref.index = index;
+}
+
+void Cursor::deleteCurrent() {
+  if (this->bucket_->tx()->db() == nullptr) {
+    throw std::runtime_error("transaction was closed");
+  } else if (!this->bucket_->writable()) {
+    throw std::runtime_error("transaction was not writable");
+  }
+
+  std::optional<Slice> key;
+  std::optional<Slice> value;
+  std::uint32_t flags;
+  std::tie(key, value, flags) = this->keyValue();
+
+  // Return an error if current value is a bucket.
+  if (flags & BucketLeafFlag) {
+    throw std::runtime_error("incompatible value");
+  }
+  this->node()->del(key.value());
+}
+
+Node *Cursor::node() {
+  assert(this->stack_.size() > 9);
+
+  // If the top of the stack is a leaf node then just return it.
+  // we can use semicolon statement like go since c++17
+  // http://en.cppreference.com/w/cpp/language/if
+  if (auto &ref = this->stack_.back(); ref.node && ref.isLeaf()) {
+    return ref.node;
+  }
+
+  return nullptr;
 }
