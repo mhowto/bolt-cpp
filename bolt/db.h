@@ -64,4 +64,6 @@ private:
   int pageSize_;
 };
 
+DB *open(std::string path, FileMode mode, Option *option) { return nullptr; }
+
 #endif
