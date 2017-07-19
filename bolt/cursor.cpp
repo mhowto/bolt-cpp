@@ -342,5 +342,18 @@ Node *Cursor::node() {
     return ref.node;
   }
 
-  return nullptr;
+  // Start from root and traverse down the hierarchy.
+  Node *n = this->stack_[0].node;
+  if (n) {
+    n = this->bucket_->node(this->stack_[0].page->id(), nullptr);
+  }
+  if (this->stack_.size() > 1) {
+    for (std::size_t i = this->stack_.size() - 1; i >= 0; i--) {
+      assert(!n->isLeaf());
+      n = n->childAt(this->stack_[i].index);
+    }
+  }
+
+  assert(n->isLeaf());
+  return n;
 }
