@@ -59,7 +59,8 @@
         "*.ipp": "cpp",
         "map": "cpp",
         "__config": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "filesystem": "cpp"
     },
     "editor.formatOnSave": true
 }

@@ -1,6 +1,16 @@
 #include "bolt/db.h"
+#include <experimental/filesystem>
 #include <string>
 
-DB *MustOpenDB() { return open(tempfile(), 0666, nullptr); }
+namespace fs = std::experimental::filesystem;
 
-std::string tempfile() {}
+// tempfile returns a temporary file path.
+std::string tempfile() {
+  fs::path path = fs::temp_directory_path();
+  return path;
+}
+
+DB *MustOpenDB() {
+  path.std::string _tempfile = tempfile();
+  return open(tempfile(), 0666, nullptr);
+}

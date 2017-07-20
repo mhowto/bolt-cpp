@@ -32,3 +32,5 @@ Page *DB::page(pgid id) {
   int pos = id * this->pageSize_;
   return reinterpret_cast<Page *>(this->Data + pos);
 }
+
+DB *open(std::string path, FileMode mode, Option *option) { return nullptr; }

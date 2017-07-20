@@ -13,6 +13,13 @@ include_directories(${MAINFOLDER})
 
 aux_source_directory(. DIR_LIB_SRCS)
 add_executable(testall ${DIR_LIB_SRCS} ${GTEST_ROOT}/src/gtest_main.cc)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    target_link_libraries(testall boltcpp gtest gtest_main c++experimental)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_link_libraries(testall boltcpp gtest gtest_main stdc++fs)
+else()
+    message(SEND_ERROR "You are using an unsupported compiler! (Not G++ or clang++)")
+endif()
 target_link_libraries(testall boltcpp gtest gtest_main)
 
 #ADD_EXECUTABLE(TFoo test_bolt_unix.cpp ${GTEST_ROOT}/src/gtest_main.cc)
