@@ -60,7 +60,9 @@
         "map": "cpp",
         "__config": "cpp",
         "__nullptr": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "cinttypes": "cpp",
+        "variant": "cpp"
     },
     "editor.formatOnSave": true
 }

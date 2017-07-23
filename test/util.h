@@ -11,6 +11,6 @@ std::string tempfile() {
 }
 
 DB *MustOpenDB() {
-  path.std::string _tempfile = tempfile();
+  std::string _tempfile = tempfile();
   return open(tempfile(), 0666, nullptr);
 }
