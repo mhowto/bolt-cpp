@@ -1,0 +1,3 @@
+[submodule "thirdparty/molly"]
+	path = thirdparty/molly
+	url = git@github.com:mhowto/molly.git

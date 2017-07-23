@@ -1,16 +1,17 @@
+#ifndef __UTIL_H
+#define __UTIL_H
+
 #include "bolt/db.h"
-#include <experimental/filesystem>
+#include "molly/ioutil/ioutil.h"
+#include "molly/os/file.h"
 #include <string>
 
-namespace fs = std::experimental::filesystem;
-
-// tempfile returns a temporary file path.
-std::string tempfile() {
-  fs::path path = fs::temp_directory_path();
-  return path;
-}
+namespace os = molly::os;
+namespace ioutil = molly::ioutil;
 
 DB *MustOpenDB() {
-  std::string _tempfile = tempfile();
+  ioutil std::string tempfile = tempfile();
   return open(tempfile(), 0666, nullptr);
 }
+
+#endif
