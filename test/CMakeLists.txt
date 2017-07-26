@@ -20,8 +20,5 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 else()
     message(SEND_ERROR "You are using an unsupported compiler! (Not G++ or clang++)")
 endif()
-target_link_libraries(testall boltcpp gtest gtest_main)
-
-#ADD_EXECUTABLE(TFoo test_bolt_unix.cpp ${GTEST_ROOT}/src/gtest_main.cc)
 
 add_test(NAME MyTest COMMAND testall)
