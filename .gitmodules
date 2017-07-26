@@ -1,3 +1,9 @@
 [submodule "thirdparty/molly"]
 	path = thirdparty/molly
-	url = git@github.com:mhowto/molly.git
+	url = https://github.com/mhowto/molly.git
+[submodule "thirdparty/GSL"]
+	path = thirdparty/GSL
+	url = https://github.com/Microsoft/GSL.git
+[submodule "thirdparty/googletest"]
+	path = thirdparty/googletest
+	url = https://github.com/google/googletest.git

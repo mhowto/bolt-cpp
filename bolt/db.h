@@ -1,6 +1,7 @@
 #ifndef __BOLT_DB_H
 #define __BOLT_DB_H
 
+#include <gsl/gsl>
 #include <string>
 
 enum class byte : unsigned char {};
@@ -38,17 +39,24 @@ struct Option {
 // DB* open(std::string path, FileMode mode, Option* option);
 
 class Page;
+namespace molly {
+namespace os {
+class File;
+}
+}
 
 class DB {
 public:
   DB(std::string path, FileMode mode, Option *option);
+  ~DB();
 
   // page retrieves a page reference from the mmap based on the current page
   // size.
   Page *page(pgid id);
 
   std::string Path;
-  int FileDescriptor;
+
+  int fd();
   // int LockFile; // winodws only
   // char *DataRef; // mmap'ed readonly, write throws SEGV
   byte *Data;
@@ -61,6 +69,7 @@ public:
   int MapFlags = 0;
 
 private:
+  gsl::owner<molly::os::File *> file_;
   int pageSize_;
 };
 

@@ -12,9 +12,12 @@ else()
     message(SEND_ERROR "You are using an unsupported compiler! (Not G++ or clang++)")
 endif()
 
-#add_subdirectory(thirdparty/GSL)
 add_subdirectory(bolt)
-add_subdirectory(thirdparty/googletest-release-1.8.0/googletest)
+if (NOT TARGET gtest)
+    add_subdirectory(thirdparty/googletest/googletest)
+endif()
+
+add_subdirectory(thirdparty/molly)
 
 enable_testing()
 add_subdirectory(test)

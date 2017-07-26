@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 TEST(CursorTest, BucketFunc) {
+  std::cout << "TO test mustopen" << std::endl;
   DB *db = MustOpenDB();
-  ASSERT_EQ(2 + 3, 5);
-  //   MustClose(db);
+  ASSERT_TRUE(db != nullptr);
 }
