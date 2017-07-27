@@ -62,7 +62,8 @@
         "__nullptr": "cpp",
         "filesystem": "cpp",
         "cinttypes": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "valarray": "cpp"
     },
     "editor.formatOnSave": true
 }

@@ -1,12 +1,17 @@
 #ifndef __BOLT_DB_H
 #define __BOLT_DB_H
 
+#include <functional>
 #include <gsl/gsl>
+#include <mutex>
+#include <shared_mutex>
 #include <string>
 
 enum class byte : unsigned char {};
 typedef int FileMode;
 typedef std::uint64_t pgid;
+
+class Tx;
 
 // Option represents the options that can be set when opening a database.
 struct Option {
@@ -54,6 +59,20 @@ public:
   // size.
   Page *page(pgid id);
 
+  // Update executes a function within the context of a read-write managed
+  // transaction.
+  // If no error is returned from the function then the trasaction is committed.
+  // If an error is returned then the entire transaction is rolled back.
+  // Any error that is returned from the function or returned from the commit is
+  // returned from the update() method method.
+  //
+  // Attempting to manually commit or rollback within the function will cause a
+  // panic.
+  void update(std::function<void(Tx *)>);
+
+  // start a new transaction.
+  Tx *begin(bool writable);
+
   std::string Path;
 
   int fd();
@@ -69,8 +88,18 @@ public:
   int MapFlags = 0;
 
 private:
+  Tx *beginTx();
+  Tx *beginRWTx();
+  void removeTx(Tx *);
+
   gsl::owner<molly::os::File *> file_;
   int pageSize_;
+  bool opened_;
+
+  mutable std::mutex rwlock_;          // Allows only one writer at a time.
+  mutable std::mutex metalock_;        // Protects meta page access.
+  mutable std::shared_mutex mmaplock_; // Protects mmap access during remapping.
+  mutable std::shared_mutex statlock_; // Ptotects stat access.
 };
 
 DB *open(std::string path, FileMode mode, Option *option);
