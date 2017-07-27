@@ -20,7 +20,8 @@ typedef std::uint64_t pgid;
 class Tx {
 public:
   Tx(DB *db);
-  const Meta *meta() { return meta_; }
+  const Meta *meta() const { return meta_; }
+  const Bucket *root() const { return root_; }
 
   // writeFlag specifies the flag for write-related methods like WriteTo().
   // Tx opens the database file with the specified flag to copy the data.
@@ -30,8 +31,8 @@ public:
   // the flag to syscall.O_DIRECT to avoid trashing the page cache.
   int writeFlag;
 
-  bool writable() { return writable_; }
-  bool managed() { return managed_; }
+  bool writable() const { return writable_; }
+  bool managed() const { return managed_; }
 
   DB *db() { return db_; }
 
@@ -44,8 +45,8 @@ private:
   bool managed_;
   DB *db_;
   gsl::owner<Meta *> meta_;
-  gsl::owner<Bucket *> root;
-  std::map<pgid, Page *> pages;
+  gsl::owner<Bucket *> root_;
+  std::map<pgid, Page *> pages_;
   // TxStats stats;
   // std::vector<> commitHandlers;
 };

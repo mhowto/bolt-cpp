@@ -2,7 +2,9 @@
 #include "tx.h"
 #include <iostream>
 
-Bucket::Bucket(Tx *tx) : fillPercent(DefaultFillPercent), tx_(tx) {}
+Bucket::Bucket(Tx *tx, const struct bucket *b)
+    : fillPercent(DefaultFillPercent), tx_(tx),
+      bucket_({/* .root */ b->root, /* .sequence */ b->sequence}) {}
 
 bool Bucket::writable() { return tx_->writable(); }
 

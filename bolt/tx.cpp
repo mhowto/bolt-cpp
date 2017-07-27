@@ -1,21 +1,26 @@
 #include "tx.h"
+#include "bucket.h"
 #include "db.h"
 #include "meta.h"
 #include "page.h"
 
 Tx::Tx(DB *db) : db_(db) {
-  this->meta_ = new Meta();
+  this->meta_ = new Meta(db->meta());
 
-  // TODO: refactor
-  // mock for node test
-  this->meta_->id_ = 7;
-  this->meta_->txid_ = 7;
+  // copy over the root bucket
+  this->root_ = new Bucket(this, this->meta()->root());
+
+  // Increment the transaction id and add a page cache for writable
+  // transactions.
+  if (this->writable_) {
+    this->meta_->incrementTxID();
+  }
 }
 
 Page *Tx::page(pgid id) {
   // Check the dirty pages first.
-  auto search = this->pages.find(id);
-  if (search != this->pages.end()) {
+  auto search = this->pages_.find(id);
+  if (search != this->pages_.end()) {
     return search->second;
   }
 

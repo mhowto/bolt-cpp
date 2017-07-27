@@ -12,6 +12,7 @@ typedef int FileMode;
 typedef std::uint64_t pgid;
 
 class Tx;
+class Meta;
 
 // Option represents the options that can be set when opening a database.
 struct Option {
@@ -76,6 +77,8 @@ public:
   std::string Path;
 
   int fd();
+  Meta *meta();
+
   // int LockFile; // winodws only
   // char *DataRef; // mmap'ed readonly, write throws SEGV
   byte *Data;
@@ -95,6 +98,9 @@ private:
   gsl::owner<molly::os::File *> file_;
   int pageSize_;
   bool opened_;
+
+  Meta *meta0;
+  Meta *meta1;
 
   mutable std::mutex rwlock_;          // Allows only one writer at a time.
   mutable std::mutex metalock_;        // Protects meta page access.

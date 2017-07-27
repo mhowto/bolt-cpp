@@ -29,7 +29,7 @@ struct bucket {
 // Bucket represents a collection of key/value pairs inside the database.
 class Bucket {
 public:
-  Bucket(Tx *tx);
+  Bucket(Tx *tx, const struct bucket *b);
   // node creates a node from a page and associates it with a given parent.
   Node *node(pgid id, const Node *parent);
 
