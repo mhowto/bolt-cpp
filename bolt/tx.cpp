@@ -4,11 +4,12 @@
 #include "meta.h"
 #include "page.h"
 
-Tx::Tx(DB *db) : db_(db) {
-  this->meta_ = new Meta(db->meta());
+Tx::Tx(DB *db, bool writable) : db_(db), writable_(writable) {
+  this->meta_ = new Meta(*db->meta());
 
   // copy over the root bucket
-  this->root_ = new Bucket(this, this->meta()->root());
+  this->root_ = new Bucket(this);
+  this->root_->set_bucket(*this->meta_->root());
 
   // Increment the transaction id and add a page cache for writable
   // transactions.

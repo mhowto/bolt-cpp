@@ -25,7 +25,7 @@ int elemRef::count() {
 std::pair<std::optional<Slice>, std::optional<Slice>> Cursor::first() {
   assert(this->bucket_->tx()->db() != nullptr);
   this->stack_.clear();
-  auto[p, n] = this->bucket_->pageNode(this->bucket_->root());
+  auto[p, n] = this->bucket_->page_node(this->bucket_->root());
 
   elemRef elem;
   elem.page = p;
@@ -88,7 +88,7 @@ std::pair<std::optional<Slice>, std::optional<Slice>> Cursor::prev() {
 std::pair<std::optional<Slice>, std::optional<Slice>> Cursor::last() {
   assert(this->bucket_->tx()->db() != nullptr);
   this->stack_.clear();
-  auto[p, n] = this->bucket_->pageNode(this->bucket_->root());
+  auto[p, n] = this->bucket_->page_node(this->bucket_->root());
 
   elemRef elem;
   elem.page = p;
@@ -132,7 +132,7 @@ void Cursor::first_() {
     // Keep adding pages pointing to the first element to the stack.
     pgid id = (ref.node) ? ref.node->inodes[ref.index].id
                          : ref.page->branchPageElement(ref.index)->id;
-    auto[p, n] = this->bucket_->pageNode(id);
+    auto[p, n] = this->bucket_->page_node(id);
     elemRef elem;
     elem.node = n;
     elem.page = p;
@@ -152,7 +152,7 @@ void Cursor::last_() {
     // Keep adding pages pointing to the last element in the stack.
     pgid id = (ref.node) ? ref.node->inodes[ref.index].id
                          : ref.page->branchPageElement(ref.index)->id;
-    auto[p, n] = this->bucket_->pageNode(id);
+    auto[p, n] = this->bucket_->page_node(id);
     elemRef elem;
     elem.node = n;
     elem.page = p;
@@ -237,7 +237,7 @@ Cursor::seek_(const Slice &seek) {
 }
 
 void Cursor::search(const Slice &key, pgid id) {
-  auto[p, n] = this->bucket_->pageNode(id);
+  auto[p, n] = this->bucket_->page_node(id);
   if (p && (p->flags() & (BranchPageFlag | LeafPageFlag)) == 0) {
     std::cerr << "invalid page type: " << p->id() << " " << p->flags() << "\n";
     std::exit(1);

@@ -2,9 +2,12 @@
 #include "tx.h"
 #include <iostream>
 
-Bucket::Bucket(Tx *tx, const struct bucket *b)
-    : fillPercent(DefaultFillPercent), tx_(tx),
-      bucket_({/* .root */ b->root, /* .sequence */ b->sequence}) {}
+Bucket::Bucket(Tx *tx) : fillPercent(DefaultFillPercent), tx_(tx) {}
+
+void Bucket::set_bucket(const struct bucket &b) {
+  this->bucket_.root = b.root;
+  this->bucket_.sequence = b.sequence;
+}
 
 bool Bucket::writable() { return tx_->writable(); }
 
@@ -15,9 +18,10 @@ Node *Bucket::node(pgid id, const Node *parent) { return nullptr; }
 
 bool Bucket::inline_() { return this->bucket_.root == 0; }
 
-std::pair<Page *, Node *> Bucket::pageNode(pgid id) {
+std::pair<Page *, Node *> Bucket::page_node(pgid id) {
   // Inline buckets have a fake page embedded in their value so treat them
-  // differently. We'll return the rootNode (if available) or the fake paeg.
+  // differently. We'll return the rootNode (if available) or the fake
+  // paeg.
   if (inline_()) {
     if (id != 0) {
       std::cerr << "inline bucket non-zero page access(2): " << id << " != 0\n";

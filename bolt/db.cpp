@@ -14,7 +14,7 @@ DB::DB(std::string path, FileMode mode, Option *option) {
   int flag = O_RDWR;
   if (option != nullptr && option->ReadOnly) {
     flag = O_RDONLY;
-    this->ReadOnly = true;
+    this->read_only_ = true;
   }
 
   file_ = new molly::os::File(path, flag | O_CREAT, mode | S_IRWXU);
@@ -31,12 +31,12 @@ Page *DB::page(pgid id) {
 
 Tx *DB::begin(bool writable) {
   if (writable) {
-    return this->beginRWTx();
+    return this->begin_rwtx();
   }
-  return this->beginTx();
+  return this->begin_tx();
 }
 
-Tx *DB::beginTx() {
+Tx *DB::begin_tx() {
   // Lock the meta pages while we initialize the transaction.We obtain
   // the meta lock before the mmap lock because that's the order that the
   // write transaction will obtain them.
@@ -58,14 +58,46 @@ Tx *DB::beginTx() {
   Tx *t = new Tx(this);
 
   // Keep track of transaction until it closes.
+  this->txs_.push_back(t);
 
   // Unlock the meta pages.
+  this->metalock_.unlock();
 
   // Update the transaction stats.
+  this->statlock_.lock();
+  this->stats_.tx_n++;
+  this->stats_.open_tx_n = this->txs_.size();
+  this->statlock_.unlock();
   return t;
 }
 
-Tx *DB::beginRWTx() { return new Tx(this); }
+Tx *DB::begin_rwtx() {
+  // If the database was opened with Options.ReadOnly, return an error.
+  if (this->read_only_) {
+    throw DatabaseReadOnlyException();
+  }
+
+  // obtain writer lock. This is released by the transaction when it closes.
+  // This enforces only one writer transaction at a time.
+  this->rwlock_.lock();
+
+  // Once we have the writer lock then we can lock the meta pages so that we can
+  // set up the transaction.
+  std::lock_guard<std::mutex> metalock(this->metalock_);
+
+  // Exit if the database is not open yet.
+  if (this->opened_) {
+    this->rwlock_.unlock();
+    return DatabaseNotOpenException();
+  }
+
+  // Create a transaction associated with the database.
+  Tx *t = new Tx(this, true);
+  this->rwtx_ = t;
+
+  // Free any pages associated with closed read-only transactions.
+  return new Tx(this);
+}
 // void removeTx(Tx *);
 
 void DB::update(std::function<void(Tx *)> fn) {

@@ -19,7 +19,7 @@ typedef std::uint64_t pgid;
 // keys.
 class Tx {
 public:
-  Tx(DB *db);
+  Tx(DB *db, bool writable = false);
   const Meta *meta() const { return meta_; }
   const Bucket *root() const { return root_; }
 

@@ -1,11 +1,13 @@
 #ifndef __BOLT_DB_H
 #define __BOLT_DB_H
 
+#include "stats.h"
 #include <functional>
 #include <gsl/gsl>
 #include <mutex>
 #include <shared_mutex>
 #include <string>
+#include <vector>
 
 enum class byte : unsigned char {};
 typedef int FileMode;
@@ -86,26 +88,33 @@ public:
   int FileSize; // current on disk file size
   int DataSize;
 
-  bool ReadOnly;
-
   int MapFlags = 0;
 
+  bool read_only() { return read_only_; }
+
 private:
-  Tx *beginTx();
-  Tx *beginRWTx();
-  void removeTx(Tx *);
+  Tx *begin_tx();
+  Tx *begin_rwtx();
+  void remove_tx(Tx *);
 
   gsl::owner<molly::os::File *> file_;
   int pageSize_;
   bool opened_;
 
-  Meta *meta0;
-  Meta *meta1;
+  gsl::owner<Meta *> meta0;
+  gsl::owner<Meta *> meta1;
+  Tx *rwtx_;
+  std::vector<Tx *> txs_;
+  struct Stats stats_;
 
   mutable std::mutex rwlock_;          // Allows only one writer at a time.
   mutable std::mutex metalock_;        // Protects meta page access.
   mutable std::shared_mutex mmaplock_; // Protects mmap access during remapping.
   mutable std::shared_mutex statlock_; // Ptotects stat access.
+
+  // Read only mode.
+  // When true, Update() and Begin(true) return DatabaseReadOnlyException
+  bool read_only_
 };
 
 DB *open(std::string path, FileMode mode, Option *option);

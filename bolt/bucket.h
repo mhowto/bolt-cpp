@@ -29,7 +29,9 @@ struct bucket {
 // Bucket represents a collection of key/value pairs inside the database.
 class Bucket {
 public:
-  Bucket(Tx *tx, const struct bucket *b);
+  Bucket(Tx *tx);
+
+  void set_bucket(const struct bucket &b);
   // node creates a node from a page and associates it with a given parent.
   Node *node(pgid id, const Node *parent);
 
@@ -58,31 +60,31 @@ public:
   // if the
   // bucket name is too long.
   // The bucket instance is only valid for the lifetime of the transaction.
-  Bucket *createBucket(Slice key);
+  Bucket *create_bucket(Slice key);
 
-  Bucket *createBucketIfNotExists(Slice key);
+  Bucket *create_bucket_if_not_exists(Slice key);
 
-  void deleteBucket(Slice key);
+  void delete_bucket(Slice key);
 
   Slice get(Slice key) const;
 
   void put(Slice key, Slice value);
 
-  void deleteByKey(Slice key);
+  void delete_by_key(Slice key);
 
   // sequence returns the current integer for the bucket without incrementing
   // it.
   std::uint64_t sequence();
 
   // setSequence updates the sequence number for the bucket.
-  void setSequence(std::uint64_t v);
+  void set_sequence(std::uint64_t v);
 
   // nextSequence returns an autoincrementing integer for the bucket.
-  std::uint64_t nextSequence();
+  std::uint64_t next_sequence();
 
   // pageNode returns the in-memory node, if it exists.
   // Otherwises returns the underlying page.
-  std::pair<Page *, Node *> pageNode(pgid id);
+  std::pair<Page *, Node *> page_node(pgid id);
 
   // inline_ checks whether the bucket is inline
   bool inline_();
@@ -98,7 +100,7 @@ public:
 private:
   // Helper method that re-interprets a sub-bucket value from
   // a parent into a Bucket.
-  Bucket *openBucket(Slice value);
+  Bucket *open_bucket(Slice value);
 
   struct bucket bucket_;
   gsl::not_null<Tx *> tx_;                  // the associated transaction

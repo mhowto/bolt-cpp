@@ -13,7 +13,6 @@ class Meta {
 public:
   pgid pgID() const { return id_; }
   txid txID() const { return txid_; }
-  Meta(const Meta *m) : Meta(*m) {}
 
   // validate checks the marker bytes and version of the meta page to ensure it
   // matches the binary. Throw exception if validation failed.
