@@ -29,8 +29,8 @@ struct TimeoutException : public std::runtime_error {
 };
 
 // These errors can occur when beginning or committing a Tx.
-struct TxNotWritableException : public std::runtime_eror {
-  TxNotWritable() : std::runtime_error("tx not writable") {}
+struct TxNotWritableException : public std::runtime_error {
+  TxNotWritableException() : std::runtime_error("tx not writable") {}
 };
 
 struct TxClosedException : public std::runtime_error {

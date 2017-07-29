@@ -2,6 +2,7 @@
 #define __BOLT_CURSOR_H
 
 #include "slice.h"
+#include "types.h"
 #include <optional>
 #include <tuple>
 #include <utility>
@@ -10,7 +11,6 @@
 class Bucket;
 class Page;
 class Node;
-typedef std::uint64_t pgid;
 
 // Cursor represents an iterator that can traverse over all key/value pairs in a
 // bucket in sorted order.
@@ -87,7 +87,7 @@ private:
 
   // search recursively performs a binary search against a given  page/node
   // until it finds a given key.
-  void search(const Slice &key, pgid id);
+  void search(const Slice &key, pgid_t id);
 
   void searchNode(const Slice &key, Node *n);
   void searchPage(const Slice &key, Page *p);

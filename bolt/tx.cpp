@@ -18,7 +18,7 @@ Tx::Tx(DB *db, bool writable) : db_(db), writable_(writable) {
   }
 }
 
-Page *Tx::page(pgid id) {
+Page *Tx::page(pgid_t id) {
   // Check the dirty pages first.
   auto search = this->pages_.find(id);
   if (search != this->pages_.end()) {

@@ -2,6 +2,7 @@
 #define __BOLT_NODE_H
 
 #include "slice.h"
+#include "types.h"
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -10,14 +11,12 @@
 class Bucket;
 class Page;
 
-typedef std::uint64_t pgid;
-
 // INode represents an internal node inside of a node.
 // It can be used to point to elements in a page or
 // point to an element which hasn't been added to a page yet.
 struct INode {
   std::uint32_t flags;
-  pgid id;
+  pgid_t id;
   Slice key;
   Slice value;
 };
@@ -80,7 +79,7 @@ public:
 
   // put inserts a key/value
   void put(const Slice &oldKey, const Slice &newKey, const Slice &value,
-           pgid id, std::uint32_t flags);
+           pgid_t id, std::uint32_t flags);
 
   // del removes a key from the node.
   // not thread-safe
@@ -121,7 +120,7 @@ public:
   bool spilled() const { return spilled_; }
   bool isLeaf() const { return isLeaf_; }
   bool unbalanced() const { return unbalanced_; }
-  pgid id() const { return id_; }
+  pgid_t id() const { return id_; }
 
 private:
   // split breaks up a node into multiple smaller nodes, if appropriate.
@@ -142,7 +141,7 @@ private:
   bool unbalanced_;
   bool spilled_;
   Slice key_;
-  pgid id_;
+  pgid_t id_;
   Node *parent_;
   std::vector<Node *> children; // help to record sub node during spilling
   std::vector<INode> inodes;

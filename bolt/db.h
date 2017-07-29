@@ -1,6 +1,7 @@
 #ifndef __BOLT_DB_H
 #define __BOLT_DB_H
 
+#include "meta.h"
 #include "stats.h"
 #include <functional>
 #include <gsl/gsl>
@@ -11,10 +12,10 @@
 
 enum class byte : unsigned char {};
 typedef int FileMode;
-typedef std::uint64_t pgid;
 
 class Tx;
 class Meta;
+struct FreeList;
 
 // Option represents the options that can be set when opening a database.
 struct Option {
@@ -60,7 +61,7 @@ public:
 
   // page retrieves a page reference from the mmap based on the current page
   // size.
-  Page *page(pgid id);
+  Page *page(pgid_t id);
 
   // Update executes a function within the context of a read-write managed
   // transaction.
@@ -105,6 +106,7 @@ private:
   gsl::owner<Meta *> meta1;
   Tx *rwtx_;
   std::vector<Tx *> txs_;
+  struct FreeList *freelist_;
   struct Stats stats_;
 
   mutable std::mutex rwlock_;          // Allows only one writer at a time.
@@ -114,7 +116,7 @@ private:
 
   // Read only mode.
   // When true, Update() and Begin(true) return DatabaseReadOnlyException
-  bool read_only_
+  bool read_only_;
 };
 
 DB *open(std::string path, FileMode mode, Option *option);

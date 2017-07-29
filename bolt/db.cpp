@@ -1,8 +1,10 @@
 #include "db.h"
 #include "exception.h"
+#include "freelist.h"
 #include "molly/os/file.h"
 #include "tx.h"
 #include "unistd.h"
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
@@ -17,6 +19,8 @@ DB::DB(std::string path, FileMode mode, Option *option) {
     this->read_only_ = true;
   }
 
+  this->freelist_ = new struct FreeList();
+
   file_ = new molly::os::File(path, flag | O_CREAT, mode | S_IRWXU);
 
   // Initialize the database if it doesn't exist
@@ -24,7 +28,7 @@ DB::DB(std::string path, FileMode mode, Option *option) {
   this->pageSize_ = ::getpagesize();
 }
 
-Page *DB::page(pgid id) {
+Page *DB::page(pgid_t id) {
   int pos = id * this->pageSize_;
   return reinterpret_cast<Page *>(this->Data + pos);
 }
@@ -88,7 +92,7 @@ Tx *DB::begin_rwtx() {
   // Exit if the database is not open yet.
   if (this->opened_) {
     this->rwlock_.unlock();
-    return DatabaseNotOpenException();
+    throw DatabaseNotOpenException();
   }
 
   // Create a transaction associated with the database.
@@ -96,7 +100,17 @@ Tx *DB::begin_rwtx() {
   this->rwtx_ = t;
 
   // Free any pages associated with closed read-only transactions.
-  return new Tx(this);
+  txid_t minid = 0xFFFFFFFFFFFFFFFF;
+  for (auto &tx : this->txs_) {
+    if (tx->meta()->txid() < minid) {
+      minid = tx->meta()->txid();
+    }
+  }
+  if (minid > 0) {
+    this->freelist_->release(minid - 1);
+  }
+
+  return t;
 }
 // void removeTx(Tx *);
 

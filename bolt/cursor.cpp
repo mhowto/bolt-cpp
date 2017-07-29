@@ -130,8 +130,8 @@ void Cursor::first_() {
     }
 
     // Keep adding pages pointing to the first element to the stack.
-    pgid id = (ref.node) ? ref.node->inodes[ref.index].id
-                         : ref.page->branchPageElement(ref.index)->id;
+    pgid_t id = (ref.node) ? ref.node->inodes[ref.index].id
+                           : ref.page->branchPageElement(ref.index)->id;
     auto[p, n] = this->bucket_->page_node(id);
     elemRef elem;
     elem.node = n;
@@ -150,8 +150,8 @@ void Cursor::last_() {
     }
 
     // Keep adding pages pointing to the last element in the stack.
-    pgid id = (ref.node) ? ref.node->inodes[ref.index].id
-                         : ref.page->branchPageElement(ref.index)->id;
+    pgid_t id = (ref.node) ? ref.node->inodes[ref.index].id
+                           : ref.page->branchPageElement(ref.index)->id;
     auto[p, n] = this->bucket_->page_node(id);
     elemRef elem;
     elem.node = n;
@@ -236,7 +236,7 @@ Cursor::seek_(const Slice &seek) {
   return this->keyValue();
 }
 
-void Cursor::search(const Slice &key, pgid id) {
+void Cursor::search(const Slice &key, pgid_t id) {
   auto[p, n] = this->bucket_->page_node(id);
   if (p && (p->flags() & (BranchPageFlag | LeafPageFlag)) == 0) {
     std::cerr << "invalid page type: " << p->id() << " " << p->flags() << "\n";

@@ -2,6 +2,7 @@
 #define __BOLT_BUCKET_H
 
 #include "gsl/gsl"
+#include "types.h"
 #include <cstdint>
 #include <map>
 #include <string>
@@ -11,7 +12,6 @@ class Tx;
 class Page;
 class Cursor;
 class Slice;
-typedef std::uint64_t pgid;
 
 // DefaultFillPercent is the percentage that split pages are filled.
 // This value can be changed by setting Bucket.FillPercent.
@@ -22,7 +22,7 @@ const double DefaultFillPercent = 0.5;
 // then its root page can be stored inline in the "value", after the bucket
 // header. In the case of inline buckets, the "root" will be 0.
 struct bucket {
-  pgid root;
+  pgid_t root;
   std::uint64_t sequence;
 };
 
@@ -33,13 +33,13 @@ public:
 
   void set_bucket(const struct bucket &b);
   // node creates a node from a page and associates it with a given parent.
-  Node *node(pgid id, const Node *parent);
+  Node *node(pgid_t id, const Node *parent);
 
   gsl::not_null<Tx *> tx();
   //  { return tx_; }
 
   // root returns the root of the bucket.
-  pgid root() { return bucket_.root; }
+  pgid_t root() { return bucket_.root; }
 
   // writable returns whether the bucket is writable.
   bool writable();
@@ -84,7 +84,7 @@ public:
 
   // pageNode returns the in-memory node, if it exists.
   // Otherwises returns the underlying page.
-  std::pair<Page *, Node *> page_node(pgid id);
+  std::pair<Page *, Node *> page_node(pgid_t id);
 
   // inline_ checks whether the bucket is inline
   bool inline_();
@@ -106,8 +106,8 @@ private:
   gsl::not_null<Tx *> tx_;                  // the associated transaction
   std::map<std::string, Bucket *> buckets_; // subbucket cache
   Page *page;                               // inline page reference
-  Node *rootNode;               // materialized node for the root page
-  std::map<pgid, Node *> nodes; // node cache
+  Node *rootNode;                 // materialized node for the root page
+  std::map<pgid_t, Node *> nodes; // node cache
 };
 
 #endif

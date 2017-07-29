@@ -1,18 +1,16 @@
 #ifndef __BOLT_META_H
 #define __BOLT_META_H
 
+#include "types.h"
 #include <cstdint>
 
 struct bucket;
 class Page;
 
-typedef std::uint64_t pgid;
-typedef std::uint64_t txid;
-
 class Meta {
 public:
-  pgid pgID() const { return id_; }
-  txid txID() const { return txid_; }
+  pgid_t pgid() const { return id_; }
+  txid_t txid() const { return txid_; }
 
   // validate checks the marker bytes and version of the meta page to ensure it
   // matches the binary. Throw exception if validation failed.
@@ -34,9 +32,9 @@ private:
   std::uint32_t pageSize_;
   std::uint32_t flags_;
   struct bucket *root_;
-  pgid freelist_;
-  pgid id_;
-  txid txid_;
+  pgid_t freelist_;
+  pgid_t id_;
+  txid_t txid_;
   std::uint64_t checksum_;
 };
 

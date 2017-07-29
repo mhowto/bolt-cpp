@@ -2,15 +2,13 @@
 #define __BOLT_TX_H
 
 #include "gsl/gsl"
+#include "meta.h"
 #include <cstdint>
 #include <map>
 
 class DB;
-class Meta;
 class Bucket;
 class Page;
-
-typedef std::uint64_t pgid;
 
 // Tx represents a read-only or read/write transaction on the database.
 // Read-only transactions can be used for retrieving values for keys and
@@ -38,7 +36,7 @@ public:
 
   // page returns a pointer to the page with a given id.
   // If page has been written to then a temporary buffered page is returned.
-  Page *page(pgid id);
+  Page *page(pgid_t id);
 
 private:
   bool writable_;
@@ -46,7 +44,7 @@ private:
   DB *db_;
   gsl::owner<Meta *> meta_;
   gsl::owner<Bucket *> root_;
-  std::map<pgid, Page *> pages_;
+  std::map<pgid_t, Page *> pages_;
   // TxStats stats;
   // std::vector<> commitHandlers;
 };

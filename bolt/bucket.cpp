@@ -14,11 +14,11 @@ bool Bucket::writable() { return tx_->writable(); }
 gsl::not_null<Tx *> Bucket::tx() { return tx_; }
 
 // TODO
-Node *Bucket::node(pgid id, const Node *parent) { return nullptr; }
+Node *Bucket::node(pgid_t id, const Node *parent) { return nullptr; }
 
 bool Bucket::inline_() { return this->bucket_.root == 0; }
 
-std::pair<Page *, Node *> Bucket::page_node(pgid id) {
+std::pair<Page *, Node *> Bucket::page_node(pgid_t id) {
   // Inline buckets have a fake page embedded in their value so treat them
   // differently. We'll return the rootNode (if available) or the fake
   // paeg.

@@ -2,12 +2,12 @@
 #define __BOLT_PAGE_H
 
 #include "slice.h"
+#include "types.h"
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
 
-typedef std::uint64_t pgid;
 class Meta;
 class LeafPageElement;
 class BranchPageElement;
@@ -32,7 +32,7 @@ template <typename T, typename U> size_t offsetOf(U T::*member) {
 class Page {
 public:
   static size_t pagehsz() { return offsetOf(&Page::ptr_); }
-  Page(pgid id, std::uint16_t flag, std::uintptr_t ptr)
+  Page(pgid_t id, std::uint16_t flag, std::uintptr_t ptr)
       : id_(id), flags_(flag), count_(0), overflow_(0), ptr_(ptr) {}
   // type returns a human readable page type string used for debugging.
   std::string type() const;
@@ -61,11 +61,11 @@ public:
   void setOverflow() { this->overflow_ |= 0xffff; }
   void unsetOverflow() { this->overflow_ &= 0x0000; }
 
-  pgid id() { return id_; }
+  pgid_t id() { return id_; }
   std::uintptr_t ptr() { return ptr_; }
 
 private:
-  pgid id_;
+  pgid_t id_;
   std::uint16_t flags_;
   std::uint32_t count_;
   std::uint32_t overflow_;
@@ -107,7 +107,7 @@ public:
 
   std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;
-  pgid id;
+  pgid_t id;
   friend bool operator<(const BranchPageElement &lhs,
                         const BranchPageElement &rhs) {
     return lhs.key() < rhs.key();

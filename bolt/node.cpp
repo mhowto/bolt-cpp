@@ -98,15 +98,15 @@ int Node::get(const Slice &key, std::string *value) const {
 
 // TODO: value may be null
 void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
-               pgid id, std::uint32_t flags) {
+               pgid_t id, std::uint32_t flags) {
   const Meta *meta = this->bucket_->tx()->meta();
   if (!meta) {
     std::cerr << "meta is null\n";
     std::exit(1);
   }
 
-  if (id >= meta->pgID()) {
-    std::cerr << "pgid (" << id << ") above high water mark (" << meta->pgID()
+  if (id >= meta->pgid()) {
+    std::cerr << "pgid (" << id << ") above high water mark (" << meta->pgid()
               << ")";
     std::exit(1);
   } else if (oldKey.size() <= 0) {
