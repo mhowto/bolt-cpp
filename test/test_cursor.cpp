@@ -9,6 +9,6 @@
 
 TEST(CursorTest, BucketFunc) {
   std::cout << "TO test mustopen" << std::endl;
-  DB *db = MustOpenDB();
+  DB *db = must_open_db();
   ASSERT_TRUE(db != nullptr);
 }

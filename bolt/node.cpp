@@ -27,9 +27,7 @@ int Node::size() const {
   return sz;
 }
 
-int Node::pageElementSize() const {
-  return this->isLeaf_ ? leafPageElementSize : branchPageElementSize;
-}
+int Node::pageElementSize() const { return this->isLeaf_ ? leafPageElementSize : branchPageElementSize; }
 
 bool Node::sizeLessThan(int v) const { return this->size() < v; }
 
@@ -42,8 +40,7 @@ Node *Node::childAt(int index) const {
 }
 
 int Node::childIndex(const Node *child) const {
-  auto first =
-      std::lower_bound(this->inodes.begin(), this->inodes.end(), child->key());
+  auto first = std::lower_bound(this->inodes.begin(), this->inodes.end(), child->key());
   if (first == this->inodes.end()) {
     return -1;
   }
@@ -86,8 +83,7 @@ int Node::get(const Slice &key, std::string *value) const {
   auto first = std::lower_bound(this->inodes.begin(), this->inodes.end(), key);
   // Add capacity and shift nodes if we don't have an exact match and need to
   // insert.
-  bool exact =
-      numChildren() > 0 && first != this->inodes.end() && (*first) == key;
+  bool exact = numChildren() > 0 && first != this->inodes.end() && (*first) == key;
   if (!exact) {
     return -1;
   }
@@ -97,17 +93,15 @@ int Node::get(const Slice &key, std::string *value) const {
 }
 
 // TODO: value may be null
-void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
-               pgid_t id, std::uint32_t flags) {
+void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value, pgid_t id, std::uint32_t flags) {
   const Meta *meta = this->bucket_->tx()->meta();
   if (!meta) {
     std::cerr << "meta is null\n";
     std::exit(1);
   }
 
-  if (id >= meta->pgid()) {
-    std::cerr << "pgid (" << id << ") above high water mark (" << meta->pgid()
-              << ")";
+  if (id >= meta->pgid) {
+    std::cerr << "pgid (" << id << ") above high water mark (" << meta->pgid << ")";
     std::exit(1);
   } else if (oldKey.size() <= 0) {
     std::cerr << "put: zero-length old key\n";
@@ -118,12 +112,10 @@ void Node::put(const Slice &oldKey, const Slice &newKey, const Slice &value,
   }
 
   // Find insertion index.
-  auto first =
-      std::lower_bound(this->inodes.begin(), this->inodes.end(), oldKey);
+  auto first = std::lower_bound(this->inodes.begin(), this->inodes.end(), oldKey);
   // Add capacity and shift nodes if we don't have an exact match and need to
   // insert.
-  bool exact =
-      numChildren() > 0 && first != this->inodes.end() && (*first) == oldKey;
+  bool exact = numChildren() > 0 && first != this->inodes.end() && (*first) == oldKey;
   auto index = first - inodes.begin();
   if (!exact) {
     this->inodes.insert(first, INode());
@@ -145,8 +137,7 @@ void Node::del(const Slice &key) {
     std::exit(1);
   }
   auto first = std::lower_bound(this->inodes.begin(), this->inodes.end(), key);
-  bool exact =
-      numChildren() > 0 && first != this->inodes.end() && (*first) == key;
+  bool exact = numChildren() > 0 && first != this->inodes.end() && (*first) == key;
   if (!exact) {
     return;
   }
@@ -174,8 +165,7 @@ void Node::write(Page *p) {
     return;
   }
 
-  char *b = reinterpret_cast<char *>(
-      p->ptr() + (this->inodes.size() * this->pageElementSize()));
+  char *b = reinterpret_cast<char *>(p->ptr() + (this->inodes.size() * this->pageElementSize()));
   for (size_t i = 0; i < this->inodes.size(); ++i) {
     const INode &n = this->inodes[i];
     if (this->isLeaf_) {

@@ -1,6 +1,7 @@
 #include "db.h"
 #include "exception.h"
 #include "freelist.h"
+#include "meta.h"
 #include "molly/os/file.h"
 #include "tx.h"
 #include "unistd.h"
@@ -11,7 +12,7 @@
 
 // namespace os = molly::os;
 
-DB::DB(std::string path, FileMode mode, Option *option) {
+DB::DB(std::string path, FileMode mode, Option *option) : opened_(true) {
   this->Path = path;
   int flag = O_RDWR;
   if (option != nullptr && option->ReadOnly) {
@@ -102,8 +103,8 @@ Tx *DB::begin_rwtx() {
   // Free any pages associated with closed read-only transactions.
   txid_t minid = 0xFFFFFFFFFFFFFFFF;
   for (auto &tx : this->txs_) {
-    if (tx->meta()->txid() < minid) {
-      minid = tx->meta()->txid();
+    if (tx->meta()->txid < minid) {
+      minid = tx->meta()->txid;
     }
   }
   if (minid > 0) {
@@ -123,4 +124,4 @@ DB::~DB() { delete file_; }
 
 int DB::fd() { return file_->fd(); }
 
-DB *open(std::string path, FileMode mode, Option *option) { return nullptr; }
+Meta *DB::meta() { return new Meta(); }

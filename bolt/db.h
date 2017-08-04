@@ -56,6 +56,9 @@ class File;
 
 class DB {
 public:
+  // open a database at the given path.
+  // If the file does not exist then it will be created automatically.
+  // Passing in nil options will cause bolt to open the database with the default options.
   DB(std::string path, FileMode mode, Option *option);
   ~DB();
 

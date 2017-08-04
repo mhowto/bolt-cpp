@@ -13,7 +13,7 @@ std::string temp_file() {
   return f.name();
 }
 
-DB *MustOpenDB() {
+DB *must_open_db() {
   std::string name = temp_file();
   DB *db = new DB(name, 0666, nullptr);
   return db;

@@ -4,6 +4,6 @@
 #include "bolt/db.h"
 #include <string>
 
-DB *MustOpenDB();
+DB *must_open_db();
 
 #endif
