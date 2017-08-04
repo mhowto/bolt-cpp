@@ -32,8 +32,7 @@ template <typename T, typename U> size_t offsetOf(U T::*member) {
 class Page {
 public:
   static size_t pagehsz() { return offsetOf(&Page::ptr_); }
-  Page(pgid_t id, std::uint16_t flag, std::uintptr_t ptr)
-      : id_(id), flags_(flag), count_(0), overflow_(0), ptr_(ptr) {}
+  Page(pgid_t id, std::uint16_t flag, std::uintptr_t ptr) : id_(id), flags_(flag), count_(0), overflow_(0), ptr_(ptr) {}
   // type returns a human readable page type string used for debugging.
   std::string type() const;
   // meta returns a pointer to the metadata section of the page.
@@ -62,6 +61,7 @@ public:
   void unsetOverflow() { this->overflow_ &= 0x0000; }
 
   pgid_t id() { return id_; }
+  void setID(pgid_t id) { this->id_ = id; }
   std::uintptr_t ptr() { return ptr_; }
 
 private:
@@ -84,19 +84,12 @@ public:
   std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;
   std::uint32_t vsize;
-  friend bool operator<(const LeafPageElement &lhs,
-                        const LeafPageElement &rhs) {
-    return lhs.key() < rhs.key();
-  }
+  friend bool operator<(const LeafPageElement &lhs, const LeafPageElement &rhs) { return lhs.key() < rhs.key(); }
 };
 
-inline bool operator==(const LeafPageElement &elem, const Slice &key) {
-  return elem.key() == key;
-}
+inline bool operator==(const LeafPageElement &elem, const Slice &key) { return elem.key() == key; }
 
-inline bool operator<(const LeafPageElement &elem, const Slice &key) {
-  return elem.key() < key;
-}
+inline bool operator<(const LeafPageElement &elem, const Slice &key) { return elem.key() < key; }
 
 // BranchPageElement represents a node on a branch page.
 class BranchPageElement {
@@ -108,19 +101,12 @@ public:
   std::uint32_t pos; // uintptr_t(this) + pos  = uintptr_t(&element)
   std::uint32_t ksize;
   pgid_t id;
-  friend bool operator<(const BranchPageElement &lhs,
-                        const BranchPageElement &rhs) {
-    return lhs.key() < rhs.key();
-  }
+  friend bool operator<(const BranchPageElement &lhs, const BranchPageElement &rhs) { return lhs.key() < rhs.key(); }
 };
 
-inline bool operator==(const BranchPageElement &elem, const Slice &key) {
-  return elem.key() == key;
-}
+inline bool operator==(const BranchPageElement &elem, const Slice &key) { return elem.key() == key; }
 
-inline bool operator<(const BranchPageElement &elem, const Slice &key) {
-  return elem.key() < key;
-}
+inline bool operator<(const BranchPageElement &elem, const Slice &key) { return elem.key() < key; }
 
 // PageInfo represents human readdable information about a page.
 struct PageInfo {

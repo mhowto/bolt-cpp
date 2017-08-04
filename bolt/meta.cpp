@@ -1,8 +1,10 @@
 #include "meta.h"
 #include "bucket.h"
+#include "cstdio"
 #include "exception.h"
 #include "molly/hash/hash.h"
 #include "page.h"
+#include <iostream>
 
 namespace hash = molly::hash;
 
@@ -22,10 +24,24 @@ void Meta::validate() {
   }
 }
 
-// writes the meta onto a page
-void Meta::write(Page *page) {}
+void Meta::write(Page *p) {
+  if (this->root->root >= this->pgid) {
+    std::cerr << "root bucket pgid (" << this->root->root << ") above high water mark (" << this->pgid << "\n";
+    std::abort();
+  } else if (this->freelist >= this->pgid) {
+    std::cerr << "freelist pgid (" << this->freelist << ") above high water mark (" << this->pgid << ")\n";
+    std::abort();
+  }
 
-// generates the checksum for the meta
+  // page id is either going to be 0 or 1 which we can determine by the transaction ID.
+  p->setID(this->txid % 2);
+  p->setFlags(p->flags() | MetaPageFlag);
+
+  // Calculate the checksum.
+  this->checksum = this->sum64();
+  *(p->meta()) = *this;
+}
+
 std::uint64_t Meta::sum64() {
   size_t first = reinterpret_cast<size_t>(&magic);
   size_t end = reinterpret_cast<size_t>(&checksum);
