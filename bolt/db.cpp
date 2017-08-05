@@ -6,8 +6,13 @@
 #include "unistd.h"
 #include <algorithm>
 #include <cerrno>
+#include <chrono>
 #include <cstring>
 #include <fcntl.h>
+#include <stdexcept>
+#include <sys/file.h>
+#include <sys/mman.h>
+#include <thread>
 
 namespace os = molly::os;
 
@@ -38,7 +43,12 @@ DB::DB(std::string path, FileMode mode, Option *option) : path_(path), opened_(t
   }
 
   // open data file and separate sync handler for metadata writes.
-  this->file_ = new File(path_, flag | O_CREAT, mode | S_IRWXU);
+  try {
+    this->file_ = new File(path_, flag | O_CREAT, mode | S_IRWXU);
+  } catch (std::exception &e) {
+    this->close();
+    throw e;
+  }
 
   // Lock file so that other processes using Bolt in read-write mode cannot
   // use the database at the same time. This would cause corruption since
@@ -47,11 +57,31 @@ DB::DB(std::string path, FileMode mode, Option *option) : path_(path), opened_(t
   // if !option.ReadOnly
   // The database file is locked using the shared lock (more than one process may
   // hold a lock at the same time) otherwise (option.ReadOnly is set).
-  this->freelist_ = new struct FreeList();
+  try {
+    this->flock(option->Timeout);
+  } catch (std::exception &e) {
+    this->close();
+    throw e;
+  }
 
-  // Initialize the database if it doesn't exist
-  // TODO: fix it
+  // Default values for test hooks
+  // directly use file->writeat
+
+  // Initialize the database if it doesn't exist.
   this->pageSize_ = ::getpagesize();
+
+  // Initialize page pool.
+
+  // memory map the data file.
+  try {
+
+  } catch (std::exception &e) {
+    throw e;
+  }
+
+  // read in the freelist
+  this->freelist_ = new struct FreeList();
+  // this->freelist_->read(this->page(this->meta()->freelist()))
 }
 
 Page *DB::page(pgid_t id) {
@@ -150,3 +180,82 @@ DB::~DB() { delete file_; }
 int DB::fd() { return file_->fd(); }
 
 Meta *DB::meta() { return new Meta(); }
+
+// flock acquires an advisory lock on a file descriptor
+void DB::flock(int timeout) {
+  auto start = std::chrono::steady_clock::now();
+  for (;;) {
+    // If we're beyond our timeout then return an error.
+    // This can only occur after we've attempted a flock once.
+    auto now = std::chrono::steady_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+    if (timeout > 0 && diff.count() > timeout) {
+      throw std::runtime_error("flock timeout");
+    }
+    int flag = !this->read_only_ ? LOCK_EX : LOCK_SH;
+
+    if (::flock(this->fd(), flag) != 0 && errno == EWOULDBLOCK) {
+      throw std::runtime_error(std::string("fail to flock:") + std::strerror(errno));
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+}
+
+void DB::close() {
+  if (!this->opened_) {
+    return;
+  }
+
+  this->opened_ = false;
+  this->freelist_ = nullptr;
+
+  // clear ops.
+  // use file->writeat() directly
+  // this->ops.writeAt = nullptr;
+
+  // close the mmap
+  this->munmap();
+
+  // close file handles.
+  if (this->file_) {
+    if (!this->read_only_) {
+      try {
+        this->funlock();
+      } catch (std::exception &e) {
+        std::cerr << "bolt.Close(): funlock error: " << e.what() << "\n";
+        throw e;
+      }
+    }
+
+    // Close the file descriptor.
+    delete this->file_;
+  }
+
+  this->path_ = "";
+}
+
+void DB::funlock() {
+  if (::flock(this->fd(), LOCK_UN) != 0) {
+    char err_info[255];
+    sprintf(err_info, "fail to unlock: %s", this->file_->name());
+    throw std::system_error(errno, std::system_category(), err_info);
+  }
+}
+
+void DB::munmap() {
+  // Ignore the unmap if we have no mapped data
+  if (!this->data_) {
+    return;
+  }
+
+  // Unmap using the original byte slice
+  int result = ::munmap((void *)this->data_, this->data_sz_);
+  this->data_ = nullptr;
+  this->data_sz_ = 0;
+  if (result != 0) {
+    char err_info[255];
+    sprintf(err_info, "fail to munmap: %s", this->file_->name());
+    throw std::system_error(errno, std::system_category(), err_info);
+  }
+}

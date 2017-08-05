@@ -84,9 +84,14 @@ public:
   bool read_only() { return read_only_; }
 
 private:
+  void close();
+
   Tx *begin_tx();
   Tx *begin_rwtx();
   void remove_tx(Tx *);
+  void flock(int timeout);
+  void funlock();
+  void munmap();
 
   int pageSize_;
   bool opened_;

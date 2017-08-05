@@ -63,7 +63,8 @@
         "filesystem": "cpp",
         "cinttypes": "cpp",
         "variant": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "shared_mutex": "cpp"
     },
     "editor.formatOnSave": true
 }
