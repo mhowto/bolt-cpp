@@ -8,9 +8,10 @@
 #include <sys/mman.h>
 #include <thread>
 
+/*
 void mmap(DB *db, int sz) {
   // Map the data file to memory
-  void *b = ::mmap(0, sz, PROT_READ, MAP_SHARED | db->MapFlags, db->fd(), 0);
+  void *b = ::mmap(0, sz, PROT_READ, MAP_SHARED | db->map_flags_, db->fd(), 0);
   if (b == MAP_FAILED) {
     char err_info[255];
     sprintf(err_info, "mmap failed:%s", std::strerror(errno));
@@ -25,8 +26,8 @@ void mmap(DB *db, int sz) {
   }
 
   // Save the original byte slice and convert to a byte array pointer.
-  db->Data = (byte *)b;
-  db->DataSize = sz;
+  db->data_ = (byte *)b;
+  db->data_size_ = sz;
 }
 
 // munmap unmaps a DB's data file from memory
@@ -41,8 +42,7 @@ void munmap(DB *db) {
   db->Data = nullptr;
   db->DataSize = 0;
   if (result != 0) {
-    throw std::runtime_error(std::string("fail to munmap:") +
-                             std::strerror(errno));
+    throw std::runtime_error(std::string("fail to munmap:") + std::strerror(errno));
   }
 }
 
@@ -53,16 +53,14 @@ void flock(DB *db, FileMode mode, bool exclusive, int timeout) {
     // If we're beyond our timeout then return an error.
     // This can only occur after we've attempted a flock once.
     auto now = std::chrono::steady_clock::now();
-    auto diff =
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
     if (timeout > 0 && diff.count() > timeout) {
       throw std::runtime_error("flock timeout");
     }
     int flag = exclusive ? LOCK_EX : LOCK_SH;
 
     if (::flock(db->fd(), flag) != 0 && errno == EWOULDBLOCK) {
-      throw std::runtime_error(std::string("fail to flock:") +
-                               std::strerror(errno));
+      throw std::runtime_error(std::string("fail to flock:") + std::strerror(errno));
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -71,7 +69,7 @@ void flock(DB *db, FileMode mode, bool exclusive, int timeout) {
 
 void funlock(DB *db) {
   if (::flock(db->fd(), LOCK_UN) != 0) {
-    throw std::runtime_error(std::string("fail to unlock:") +
-                             std::strerror(errno));
+    throw std::runtime_error(std::string("fail to unlock:") + std::strerror(errno));
   }
 }
+*/

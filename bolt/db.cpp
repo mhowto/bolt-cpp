@@ -2,7 +2,6 @@
 #include "exception.h"
 #include "freelist.h"
 #include "meta.h"
-#include "molly/os/file.h"
 #include "tx.h"
 #include "unistd.h"
 #include <algorithm>
@@ -10,19 +9,45 @@
 #include <cstring>
 #include <fcntl.h>
 
-// namespace os = molly::os;
+namespace os = molly::os;
 
-DB::DB(std::string path, FileMode mode, Option *option) : opened_(true) {
-  this->Path = path;
+const int DefaultMaxBatchSize = 1000;
+const int DefaultMaxBatchDelay = 10;
+const int DefaultAllocSize = 16 * 1024 * 1024;
+
+Option DefaultOption = {/* .Timeout */ 0, /* .NoGrowSync */ false, /* .ReadOnly */ false, /* .MmapFlags */ 0,
+                        /* .InitialMmapSize */ 0};
+
+DB::DB(std::string path, FileMode mode, Option *option) : path_(path), opened_(true) {
+  // Set default option if no option is provided.
+  if (!option) {
+    option = &DefaultOption;
+  }
+  this->no_grow_sync_ = option->NoGrowSync;
+  this->mmap_flags_ = option->MmapFlags;
+
+  // Set default values for later DB operations.
+  this->max_batch_size_ = DefaultMaxBatchSize;
+  this->max_batch_delay_ = DefaultMaxBatchDelay;
+  this->alloc_size_ = DefaultAllocSize;
+
   int flag = O_RDWR;
   if (option != nullptr && option->ReadOnly) {
     flag = O_RDONLY;
     this->read_only_ = true;
   }
 
-  this->freelist_ = new struct FreeList();
+  // open data file and separate sync handler for metadata writes.
+  this->file_ = new File(path_, flag | O_CREAT, mode | S_IRWXU);
 
-  file_ = new molly::os::File(path, flag | O_CREAT, mode | S_IRWXU);
+  // Lock file so that other processes using Bolt in read-write mode cannot
+  // use the database at the same time. This would cause corruption since
+  // the two processes would write meta pages and free pages separately.
+  // The database file is locked exclusively (only one process can grab the lock)
+  // if !option.ReadOnly
+  // The database file is locked using the shared lock (more than one process may
+  // hold a lock at the same time) otherwise (option.ReadOnly is set).
+  this->freelist_ = new struct FreeList();
 
   // Initialize the database if it doesn't exist
   // TODO: fix it
@@ -31,7 +56,7 @@ DB::DB(std::string path, FileMode mode, Option *option) : opened_(true) {
 
 Page *DB::page(pgid_t id) {
   int pos = id * this->pageSize_;
-  return reinterpret_cast<Page *>(this->Data + pos);
+  return reinterpret_cast<Page *>(this->data_ + pos);
 }
 
 Tx *DB::begin(bool writable) {

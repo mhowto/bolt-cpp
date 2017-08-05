@@ -2,6 +2,7 @@
 #define __BOLT_DB_H
 
 #include "meta.h"
+#include "molly/os/file.h"
 #include "stats.h"
 #include <functional>
 #include <gsl/gsl>
@@ -9,6 +10,8 @@
 #include <shared_mutex>
 #include <string>
 #include <vector>
+
+using File = molly::os::File;
 
 enum class byte : unsigned char {};
 typedef int FileMode;
@@ -48,11 +51,6 @@ struct Option {
 // DB* open(std::string path, FileMode mode, Option* option);
 
 class Page;
-namespace molly {
-namespace os {
-class File;
-}
-}
 
 class DB {
 public:
@@ -80,19 +78,8 @@ public:
   // start a new transaction.
   Tx *begin(bool writable);
 
-  std::string Path;
-
   int fd();
   Meta *meta();
-
-  // int LockFile; // winodws only
-  // char *DataRef; // mmap'ed readonly, write throws SEGV
-  byte *Data;
-  // int MaxMapSize;
-  int FileSize; // current on disk file size
-  int DataSize;
-
-  int MapFlags = 0;
 
   bool read_only() { return read_only_; }
 
@@ -101,12 +88,70 @@ private:
   Tx *begin_rwtx();
   void remove_tx(Tx *);
 
-  gsl::owner<molly::os::File *> file_;
   int pageSize_;
   bool opened_;
 
+  // When enabled, the database will perform a Check() after every commit.
+  // A panic is issued if the database is in an inconsistent state. This
+  // flag has a large performace impact so it should only be used for
+  // debugging purposee;
+  bool strict_mode_;
+
+  // Setting the no_sync flag will cause the database to skip fsync()
+  // calls after ecah commit. This can be useful when bulk loading data
+  // into a database and you can restart the bulk load in the event of
+  // a system failure or database corruption. Do not set this flag
+  // for normal use.
+  //
+  // If the package global IngoreNoSync constant is true, this value is
+  // ignored. See the comment on that constant for more details.
+  //
+  // THIS IS UNSAFE. PLEASE USE WITH CAUTION.
+  bool no_sync_;
+
+  // When true, skips the truncate call when growing the database.
+  // Setting this to true is only safe on non-ext3/ext4 systems.
+  // Skipping truncation avoids preallocation of hard drive space and
+  // bypasses a truncate() and fsync() syscall on remapping.
+  //
+  // https://github.com/boltdb/bolt/issues/284
+  bool no_grow_sync_;
+
+  // If you want to read the entire database fast, you can set mmap_falgs_ to
+  // syscall.MAP_POPULATE on Linux 2.6.23+ for sequential read-ahead.
+  int mmap_flags_;
+
+  // max_batch_size_ is the maximum size of a batch. Default value is
+  // copied from DefaultMaxbatchSize in constructor.
+  //
+  // If <= 0, disables batching.
+  //
+  // Do not change concurrently with calls to Batch.
+  int max_batch_size_;
+
+  // max_batch_delay_ is the maximum delay(in milliseconds) before a batch starts.
+  // Default value is copied from DefaultMaxBatchDelay in constructor.
+  //
+  // If <=0, effectively disables batching.
+  //
+  // Do not change concurrently with calls to Batch.
+  int max_batch_delay_;
+
+  // alloc_size_ is the amount of space allocated when the database
+  // needs to create new pages. This is done to amortize the cost
+  // of truncate() and fsync() when growing the data file.
+  int alloc_size_;
+
+  std::string path_;
+  gsl::owner<File *> file_;
+  gsl::owner<File *> lock_file_; // windows only
+  char *dataref_;
+  char *data_; // pointer to mmapped  file
+  int data_sz_;
+  int file_sz_; // current on disk file size
   gsl::owner<Meta *> meta0;
   gsl::owner<Meta *> meta1;
+  int page_size_;
   Tx *rwtx_;
   std::vector<Tx *> txs_;
   struct FreeList *freelist_;
