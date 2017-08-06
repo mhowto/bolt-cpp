@@ -7,6 +7,12 @@
 struct bucket;
 class Page;
 
+// Represents a marker value to indicate that a file is a Bolt DB.
+const std::uint32_t Magic = 0xED0CDAED;
+
+// The data file format version.
+const int Version = 2;
+
 class Meta {
 public:
   // validate checks the marker bytes and version of the meta page to ensure it

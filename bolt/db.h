@@ -3,6 +3,7 @@
 
 #include "meta.h"
 #include "molly/os/file.h"
+#include "page.h"
 #include "stats.h"
 #include <functional>
 #include <gsl/gsl>
@@ -50,8 +51,6 @@ struct Option {
 
 // DB* open(std::string path, FileMode mode, Option* option);
 
-class Page;
-
 class DB {
 public:
   // open a database at the given path.
@@ -92,7 +91,11 @@ private:
   void flock(int timeout);
   void funlock();
   void munmap();
+  void init();
 
+  template <class Container> Page *page_in_buffer(Container &buf, pgid_t id);
+
+private:
   int pageSize_;
   bool opened_;
 
@@ -173,5 +176,9 @@ private:
 };
 
 DB *open(std::string path, FileMode mode, Option *option);
+
+template <class Container> Page *DB::page_in_buffer(Container &buf, pgid_t id) {
+  return reinterpret_cast<Page *>(&buf[id * static_cast<pgid_t>(this->page_size_)]);
+}
 
 #endif

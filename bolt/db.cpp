@@ -23,7 +23,7 @@ const int DefaultAllocSize = 16 * 1024 * 1024;
 Option DefaultOption = {/* .Timeout */ 0, /* .NoGrowSync */ false, /* .ReadOnly */ false, /* .MmapFlags */ 0,
                         /* .InitialMmapSize */ 0};
 
-DB::DB(std::string path, FileMode mode, Option *option) : path_(path), opened_(true) {
+DB::DB(std::string path, FileMode mode, Option *option) : opened_(false), path_(path) {
   // Set default option if no option is provided.
   if (!option) {
     option = &DefaultOption;
@@ -68,7 +68,23 @@ DB::DB(std::string path, FileMode mode, Option *option) : path_(path), opened_(t
   // directly use file->writeat
 
   // Initialize the database if it doesn't exist.
-  this->pageSize_ = ::getpagesize();
+  os::file_info fi = this->file_->stat();
+  if (fi.size == 0) {
+    // Initialize new files with meta pages.
+    this->init();
+  } else {
+    // Read the first meta page to determine the page size.
+    std::string buf;
+    buf.reserve(1000);
+    this->file_->read_at(buf, 0);
+    Meta *m = this->page_in_buffer(buf, 0)->meta();
+    try {
+      m->validate();
+      this->page_size_ = m->page_size;
+    } catch (std::exception &e) {
+      this->page_size_ = ::getpagesize();
+    }
+  }
 
   // Initialize page pool.
 
@@ -82,6 +98,47 @@ DB::DB(std::string path, FileMode mode, Option *option) : path_(path), opened_(t
   // read in the freelist
   this->freelist_ = new struct FreeList();
   // this->freelist_->read(this->page(this->meta()->freelist()))
+}
+
+void DB::init() {
+  // Set the page size to the OS page size.
+  this->page_size_ = ::getpagesize();
+
+  // Create two meta pages on a buffer.
+  std::string buf;
+  buf.reserve(4 * this->page_size_);
+  for (int i = 0; i < 2; i++) {
+    Page *p = this->page_in_buffer(buf, i);
+    p->setID(static_cast<pgid_t>(i));
+    p->setFlags(MetaPageFlag);
+
+    // Initialize the meta page.
+    Meta *m = p->meta();
+    m->magic = Magic;
+    m->version = Version;
+    m->page_size = static_cast<std::uint32_t>(this->page_size_);
+    m->freelist = 2;
+    // m->root = new struct bucket();
+    m->pgid = 4;
+    m->txid = static_cast<txid_t>(i);
+    m->checksum = m->sum64();
+  }
+
+  // Write an empty freelist at page 3.
+  Page *p = this->page_in_buffer(buf, 2);
+  p->setID(static_cast<pgid_t>(2));
+  p->setFlags(FreelistPageFlag);
+  p->setCount(0);
+
+  // Write an empty leaf page at page 4.
+  p = this->page_in_buffer(buf, 3);
+  p->setID(static_cast<pgid_t>(3));
+  p->setFlags(LeafPageFlag);
+  p->setCount(0);
+
+  // Write the buffer to our data file.
+  this->file_->write_at(buf, 0);
+  fdatasync(this);
 }
 
 Page *DB::page(pgid_t id) {

@@ -8,12 +8,6 @@
 
 namespace hash = molly::hash;
 
-// Represents a marker value to indicate that a file is a Bolt DB.
-const std::uint32_t Magic = 0xED0CDAED;
-
-// The data file format version.
-const int Version = 2;
-
 void Meta::validate() {
   if (this->magic != Magic) {
     throw DatabaseInvalidException();
