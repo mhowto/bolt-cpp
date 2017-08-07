@@ -64,7 +64,10 @@
         "cinttypes": "cpp",
         "variant": "cpp",
         "valarray": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "strstream": "cpp",
+        "complex": "cpp",
+        "gsl_byte": "cpp"
     },
     "editor.formatOnSave": true
 }

@@ -90,8 +90,10 @@ private:
   void remove_tx(Tx *);
   void flock(int timeout);
   void funlock();
+  void mmap(int sz);
   void munmap();
   void init();
+  void fdatasync();
 
   template <class Container> Page *page_in_buffer(Container &buf, pgid_t id);
 

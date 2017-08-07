@@ -138,7 +138,14 @@ void DB::init() {
 
   // Write the buffer to our data file.
   this->file_->write_at(buf, 0);
-  fdatasync(this);
+  this->fdatasync();
+}
+
+void DB::fdatasync() {
+  int r = ::fdatasync(fd());
+  if (r != 0) {
+    throw std::system_error(errno, std::system_category(), "fdatasync failed");
+  }
 }
 
 Page *DB::page(pgid_t id) {
@@ -298,6 +305,23 @@ void DB::funlock() {
     sprintf(err_info, "fail to unlock: %s", this->file_->name());
     throw std::system_error(errno, std::system_category(), err_info);
   }
+}
+
+void DB::mmap(int sz) {
+  // Map the data file to memory
+  void *b = ::mmap(0, sz, PROT_READ, MAP_SHARED | this->mmap_flags_, this->fd(), 0);
+  if (b == MAP_FAILED) {
+    throw std::system_error(errno, std::system_category(), "mmap failed");
+  }
+
+  // Advise the kernel that the mmap is accessed randomly.
+  if (::madvise(b, sz, MADV_RANDOM) != 0) {
+    throw std::system_error(errno, std::system_category(), "madvise failed");
+  }
+
+  // Save the original byte slice and convert to a byte array pointer.
+  this->data_ = (char *)b;
+  this->data_sz_ = sz;
 }
 
 void DB::munmap() {
