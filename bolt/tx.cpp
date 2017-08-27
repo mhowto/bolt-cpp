@@ -4,7 +4,7 @@
 #include "meta.h"
 #include "page.h"
 
-Tx::Tx(DB *db, bool writable) : db_(db), writable_(writable) {
+Tx::Tx(DB *db, bool writable) : writable_(writable), db_(db) {
   this->meta_ = new Meta(*db->meta());
 
   // copy over the root bucket

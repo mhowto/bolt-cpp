@@ -4,6 +4,7 @@
 #include "meta.h"
 #include "molly/os/file.h"
 #include "page.h"
+#include "page_pool.h"
 #include "stats.h"
 #include <functional>
 #include <gsl/gsl>
@@ -166,6 +167,8 @@ private:
   std::vector<Tx *> txs_;
   struct FreeList *freelist_;
   struct Stats stats_;
+
+  gsl::owner<PagePool *> page_pool_;
 
   mutable std::mutex rwlock_;          // Allows only one writer at a time.
   mutable std::mutex metalock_;        // Protects meta page access.

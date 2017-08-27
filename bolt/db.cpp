@@ -87,6 +87,10 @@ DB::DB(std::string path, FileMode mode, Option *option) : opened_(false), path_(
   }
 
   // Initialize page pool.
+  this->page_pool_ = new PagePool([s = pageSize_]() {
+    char *bytes = new char[s];
+    return Slice(bytes, s);
+  });
 
   // memory map the data file.
   try {
@@ -302,7 +306,7 @@ void DB::close() {
 void DB::funlock() {
   if (::flock(this->fd(), LOCK_UN) != 0) {
     char err_info[255];
-    sprintf(err_info, "fail to unlock: %s", this->file_->name());
+    sprintf(err_info, "fail to unlock: %s", this->file_->name().c_str());
     throw std::system_error(errno, std::system_category(), err_info);
   }
 }
@@ -336,7 +340,7 @@ void DB::munmap() {
   this->data_sz_ = 0;
   if (result != 0) {
     char err_info[255];
-    sprintf(err_info, "fail to munmap: %s", this->file_->name());
+    sprintf(err_info, "fail to munmap: %s", this->file_->name().c_str());
     throw std::system_error(errno, std::system_category(), err_info);
   }
 }
