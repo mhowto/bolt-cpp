@@ -94,14 +94,15 @@ DB::DB(std::string path, FileMode mode, Option *option) : opened_(false), path_(
 
   // memory map the data file.
   try {
-
+    this->mmap(option->InitialMmapSize);
   } catch (std::exception &e) {
+    this->close();
     throw e;
   }
 
   // read in the freelist
   this->freelist_ = new struct FreeList();
-  // this->freelist_->read(this->page(this->meta()->freelist()))
+  this->freelist_->read(this->page(this->meta()->freelist));
 }
 
 void DB::init() {

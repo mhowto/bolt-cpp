@@ -51,7 +51,7 @@ std::vector<LeafPageElement> Page::leafPageElements() const {
     return result;
   }
   LeafPageElement *ptr = reinterpret_cast<LeafPageElement *>(this->ptr_);
-  for (int i = 0; i < this->count_; i++) {
+  for (unsigned int i = 0; i < this->count_; i++) {
     result.push_back(*(ptr + i));
   }
   return result;
@@ -68,7 +68,7 @@ std::vector<BranchPageElement> Page::branchPageElements() const {
     return result;
   }
   BranchPageElement *ptr = reinterpret_cast<BranchPageElement *>(this->ptr_);
-  for (int i = 0; i < this->count_; i++) {
+  for (unsigned int i = 0; i < this->count_; i++) {
     result.push_back(*(ptr + i));
   }
   return result;
