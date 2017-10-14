@@ -28,3 +28,5 @@ Page *Tx::page(pgid_t id) {
   // Otherwise return directly from the mmap.
   return this->db_->page(id);
 }
+
+std::int64_t Tx::size() { return static_cast<std::int64_t>(this->meta_->pgid) * this->db_->pageSize; }
