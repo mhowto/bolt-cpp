@@ -42,3 +42,5 @@ std::pair<Page *, Node *> Bucket::page_node(pgid_t id) {
   }
   return std::make_pair(this->tx_->page(id), nullptr);
 }
+
+Bucket *Bucket::create_bucket(Slice name) { return nullptr; }

@@ -83,6 +83,8 @@ public:
 
   bool read_only() { return read_only_; }
 
+  int page_size() { return pageSize_; }
+
 private:
   void close();
 

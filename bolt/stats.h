@@ -1,7 +1,7 @@
 #ifndef __BOLT_STATS_H
 #define __BOLT_STATS_H
 
-#include <cstdint>
+#include <chrono>
 
 // TxStats reprents statistics about the actions performed by the transaction.
 struct TxStats {
@@ -17,17 +17,17 @@ struct TxStats {
   int node_deref; // number of node dereferences
 
   // Rebalance statistics.
-  int rebalance;                // number of node rebalances
-  std::uint64_t rebalance_time; // total time spent rebalancing
+  int rebalance;                            // number of node rebalances
+  std::chrono::milliseconds rebalance_time; // total time spent rebalancing
 
   // Split/Spill statistics.
-  int split;                // number of nodes split
-  int spill;                // number of nodes spilled
-  std::uint64_t spill_time; // total time spent spilling
+  int split;                            // number of nodes split
+  int spill;                            // number of nodes spilled
+  std::chrono::milliseconds spill_time; // total time spent spilling
 
   // Write statistics.
-  int write;                // number of writes performed
-  std::uint64_t write_time; // total time spent writing to disk
+  int write;                            // number of writes performed
+  std::chrono::milliseconds write_time; // total time spent writing to disk
 
   TxStats &operator+=(const TxStats &rhs) {
     this->page_count += rhs.page_count;

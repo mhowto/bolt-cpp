@@ -75,13 +75,10 @@ public:
   int compare(const Slice &that) const;
 
   // Return true iff "x" is a prefix of "*this"
-  bool starts_with(const Slice &x) const {
-    return ((size_ >= x.size_) && (std::memcmp(data_, x.data_, x.size_) == 0));
-  }
+  bool starts_with(const Slice &x) const { return ((size_ >= x.size_) && (std::memcmp(data_, x.data_, x.size_) == 0)); }
 
   bool ends_with(const Slice &x) const {
-    return ((size_ >= x.size_) &&
-            (memcmp(data_ + size_ - x.size_, x.data_, x.size_) == 0));
+    return ((size_ >= x.size_) && (memcmp(data_ + size_ - x.size_, x.data_, x.size_) == 0));
   }
 
   // Compare two slices and returns the first byte where they differ
@@ -119,8 +116,7 @@ inline size_t Slice::difference_offset(const Slice &that) const {
 // points to an array of Slices. The number of elements in the array
 // is 'num_parts'.
 struct SliceParts {
-  SliceParts(const Slice *_parts, int _num_parts)
-      : parts(_parts), num_parts(_num_parts) {}
+  SliceParts(const Slice *_parts, int _num_parts) : parts(_parts), num_parts(_num_parts) {}
   SliceParts() : parts(nullptr), num_parts(0) {}
 
   const Slice *parts;
@@ -128,8 +124,7 @@ struct SliceParts {
 };
 
 inline bool operator==(const Slice &x, const Slice &y) {
-  return ((x.size() == y.size()) &&
-          (std::memcmp(x.data(), y.data(), x.size()) == 0));
+  return ((x.size() == y.size()) && (std::memcmp(x.data(), y.data(), x.size()) == 0));
 }
 
 inline bool operator<(const Slice &x, const Slice &y) {

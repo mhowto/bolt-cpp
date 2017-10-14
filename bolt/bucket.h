@@ -106,8 +106,8 @@ private:
   gsl::not_null<Tx *> tx_;                  // the associated transaction
   std::map<std::string, Bucket *> buckets_; // subbucket cache
   Page *page;                               // inline page reference
-  Node *rootNode;                 // materialized node for the root page
-  std::map<pgid_t, Node *> nodes; // node cache
+  Node *rootNode;                           // materialized node for the root page
+  std::map<pgid_t, Node *> nodes;           // node cache
 };
 
 #endif
