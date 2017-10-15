@@ -1,17 +1,17 @@
 #ifndef __BOLT_BUCKET_H
 #define __BOLT_BUCKET_H
 
-#include "gsl/gsl"
+#include <gsl/gsl>
 #include "types.h"
 #include <cstdint>
 #include <map>
 #include <string>
+#include "slice.h"
 
 class Node;
 class Tx;
 class Page;
 class Cursor;
-class Slice;
 
 // DefaultFillPercent is the percentage that split pages are filled.
 // This value can be changed by setting Bucket.FillPercent.
@@ -96,6 +96,8 @@ public:
   // This is non-persisted across transactions so it must be set in every
   // Tx.
   double fillPercent;
+
+  void for_each(std::function<void(Slice key, Slice value)> fn);
 
 private:
   // Helper method that re-interprets a sub-bucket value from

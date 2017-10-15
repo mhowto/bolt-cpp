@@ -7,10 +7,10 @@
 #include "page_pool.h"
 #include "stats.h"
 #include <functional>
-#include <gsl/gsl>
 #include <mutex>
 #include <shared_mutex>
 #include <string>
+#include <gsl/gsl>
 #include <vector>
 
 using File = molly::os::File;
@@ -180,6 +180,8 @@ private:
   // Read only mode.
   // When true, Update() and Begin(true) return DatabaseReadOnlyException
   bool read_only_;
+
+  friend class Tx;
 };
 
 DB *open(std::string path, FileMode mode, Option *option);

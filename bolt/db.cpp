@@ -345,3 +345,7 @@ void DB::munmap() {
     throw std::system_error(errno, std::system_category(), err_info);
   }
 }
+
+void DB::remove_tx(Tx *) {
+
+}

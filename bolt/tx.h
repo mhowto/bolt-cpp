@@ -1,21 +1,22 @@
 #ifndef __BOLT_TX_H
 #define __BOLT_TX_H
 
-#include "bucket.h"
-#include "gsl/gsl"
 #include "meta.h"
 #include "molly/os/file.h"
 #include "slice.h"
 #include "stats.h"
+#include <gsl/gsl>
 #include <cstdint>
 #include <functional>
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 class DB;
 class Page;
 class Cursor;
+class Bucket;
 struct PageInfo;
 
 namespace os = molly::os;
@@ -59,7 +60,7 @@ public:
   // All items in the cursor will return a nil value becaurse all root bucket keys point to buckets.
   // The cursor is noly valid as long as the transaction is open.
   // Do not use a cursor after the transaction is closed;
-  Cursor *cursor() { return root_->cursor(); }
+  Cursor *cursor();
 
   // stats retrieves a copy of the current transaction statistics.
   const TxStats &stats() { return stats_; }
@@ -67,19 +68,19 @@ public:
   // bucket retrieves a bucket by name.
   // Returns null if the bucket does not exist.
   // The bucket instance is only valid for the lifetime of the transaction.
-  Bucket *bucket(Slice name) { return root_->bucket(name); }
+  Bucket *bucket(Slice name);
 
   // create_bucket creates a new bucket.
   // Returns an error if the bucket already exists, if the bucket name is blank, or if the bucket name is too long.
   // The bucket instance is only valid for the lifetime of the transction.
-  Bucket *create_bucket(Slice name) { return root_->create_bucket(name); }
+  Bucket *create_bucket(Slice name);
 
   // create_bucket_if_not_exists creates a new bucket if it doesn't already exist.
   // Returns an error if the bucket name is blank, or if the bucket name is too long.
   // The bucket instance is only valid for the lifetime of the transaction.
-  Bucket *create_bucket_if_not_exists(Slice name) { return root_->create_bucket_if_not_exists(name); }
+  Bucket *create_bucket_if_not_exists(Slice name);
 
-  void delete_bucket(Slice name) { return root_->delete_bucket(name); }
+  void delete_bucket(Slice name);
 
   // for_each executes a function for each bucket in the root.
   // If the provided function returns an error then the iteration is stopped
@@ -100,7 +101,7 @@ public:
 
   // Write_to writes the entire database to a writer.
   // If err == nil then exactly tx.Size() bytes will be written into the writer.
-  std::int64_t write_to();
+  std::int64_t write_to(os::File w);
 
   // copy_file copies the entire database to file at the given path.
   // A reader transaction is maintained during the copy so it is safe to continue
@@ -129,7 +130,7 @@ private:
   gsl::owner<Bucket *> root_;
   std::map<pgid_t, Page *> pages_;
   TxStats stats_;
-  // std::vector<> commitHandlers;
+  std::vector<std::function<void()> > commit_handlers_;
 
   void _rollback();
 

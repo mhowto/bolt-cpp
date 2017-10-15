@@ -44,3 +44,16 @@ std::pair<Page *, Node *> Bucket::page_node(pgid_t id) {
 }
 
 Bucket *Bucket::create_bucket(Slice name) { return nullptr; }
+
+Cursor *Bucket::cursor() { return nullptr; }
+
+Bucket *Bucket::bucket(Slice name) { return nullptr; }
+
+Bucket *Bucket::create_bucket_if_not_exists(Slice key) { return nullptr; }
+
+void Bucket::delete_bucket(Slice key) {}
+
+void Bucket::delete_by_key(Slice key) {}
+
+void Bucket::for_each(std::function<void(Slice key, Slice value)> fn) {
+}

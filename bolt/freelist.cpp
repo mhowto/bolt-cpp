@@ -53,3 +53,37 @@ void FreeList::reindex() {
     }
   }
 }
+
+void FreeList::rollback(txid_t txid) {
+}
+
+void FreeList::reload(Page *p) {
+}
+
+int FreeList::size() {
+  return 0;
+}
+
+int FreeList::count() {
+  return 0;
+}
+
+int FreeList::free_count() {
+  return 0;
+}
+
+int FreeList::pending_count() {
+  return 0;
+}
+
+pgid_t FreeList::allocate(int n) {
+  return 0;
+}
+
+void FreeList::free(txid_t txid, Page *p) {
+
+}
+
+bool FreeList::freed(pgid_t pgid) {
+  return false;
+}
